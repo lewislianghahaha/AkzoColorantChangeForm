@@ -145,6 +145,7 @@
             // 
             // comProductList
             // 
+            this.comProductList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comProductList.FormattingEnabled = true;
             this.comProductList.Location = new System.Drawing.Point(290, 11);
             this.comProductList.Name = "comProductList";
@@ -162,6 +163,7 @@
             // 
             // comFactory
             // 
+            this.comFactory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comFactory.FormattingEnabled = true;
             this.comFactory.Location = new System.Drawing.Point(76, 12);
             this.comFactory.Name = "comFactory";

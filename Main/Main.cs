@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Data;
+using System.Threading;
 using System.Windows.Forms;
+using Main.DB;
 using Main.Import;
 
 namespace Main
 {
     public partial class Main : Form
     {
+        Task task=new Task();
+        Load load=new Load();
+
         public Main()
         {
             InitializeComponent();
@@ -72,10 +77,22 @@ namespace Main
             comProductList.ValueMember = "Id";    //设置默认值内码
         }
 
-        //制造商下拉列表
+        //制造商下拉列表(获取数据的"制造商"值并进行显示)
         private void ComFactory_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            try
+            {
+                //将所需的值赋到Task类内
+                task.TaskId = 3;
+                task.StartTask();
+                comFactory.DataSource = task.RestulTable;
+                comFactory.DisplayMember = "Factory";     //设置显示值
+                comFactory.ValueMember = "Factory";       //设置默认值内码
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         /// <summary>
@@ -85,7 +102,35 @@ namespace Main
         /// <param name="e"></param>
         private void BtnGenerate_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            try
+            {
+                //获取所选择的“制造商”下拉列表值
+                var dvList = (DataRowView) comFactory.Items[comFactory.SelectedIndex];
+                var factoryName = Convert.ToString(dvList["Factory"]);
+
+                //获取所选择的“产品系列”下拉列表值
+                var dvProductlist = (DataRowView)comProductList.Items[comProductList.SelectedIndex];
+                var pid = Convert.ToInt32(dvProductlist["Id"]);
+
+                //将所需的值赋到Task类内
+                task.TaskId = 6;
+                task.Factory = factoryName;
+                task.pid = pid;
+
+                //使用子线程工作(作用:通过调用子线程进行控制Load窗体的关闭情况)
+                new Thread(Start).Start();
+                load.StartPosition = FormStartPosition.CenterScreen;
+                load.ShowDialog();
+
+                if (task.RestulTable.Rows.Count == 0) throw new Exception("运算不能成功,请联系管理人员.");
+                MessageBox.Show("导入成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                gvdtl.DataSource = task.RestulTable;
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         /// <summary>
@@ -95,7 +140,7 @@ namespace Main
         /// <param name="e"></param>
         private void TmImportAkzo_Click(object sender, EventArgs e)
         {
-            ImportAkzoFormula importAkzoFormula=new ImportAkzoFormula();
+            var importAkzoFormula=new ImportAkzoFormula();
             importAkzoFormula.StartPosition= FormStartPosition.CenterScreen;
             importAkzoFormula.ShowDialog();
         }
@@ -107,7 +152,9 @@ namespace Main
         /// <param name="e"></param>
         private void TmIAkzoContrast_Click(object sender, EventArgs e)
         {
-            
+            var importAkzoColorant=new ImportAkzoColorant();
+            importAkzoColorant.StartPosition=FormStartPosition.CenterParent;
+            importAkzoColorant.ShowDialog();
         }
 
         /// <summary>
@@ -117,7 +164,17 @@ namespace Main
         /// <param name="e"></param>
         private void TmExport_Click(object sender, EventArgs e)
         {
-             
+            try
+            {
+                if(gvdtl.Rows.Count==0) throw new Exception("没有执行结果,不能执行导出操作");
+
+
+
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         /// <summary>
@@ -138,6 +195,19 @@ namespace Main
         private void TmClose_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        /// <summary>
+        ///子线程使用(重:用于监视功能调用情况,当完成时进行关闭LoadForm)
+        /// </summary>
+        private void Start()
+        {
+            task.StartTask();
+
+            //当完成后将Form2子窗体关闭
+            this.Invoke((ThreadStart)(() => {
+                load.Close();
+            }));
         }
     }
 }

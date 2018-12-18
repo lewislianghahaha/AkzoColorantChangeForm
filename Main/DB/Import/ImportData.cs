@@ -1,10 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
 using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 
@@ -57,8 +56,8 @@ namespace Main.DB.Import
                 var sheet = wk.GetSheetAt(0);
                 //获取第一行
                 var hearRow = sheet.GetRow(0);
-                //创建列标题
 
+                //创建列标题
                 if (tableName == "AkzoFormula")
                 {
                     for (int i = hearRow.FirstCellNum; i < hearRow.Cells.Count; i++)
@@ -121,7 +120,7 @@ namespace Main.DB.Import
                 {
                     var result = false;
                     var dr = dt.NewRow();
-                    //获取当前行
+                    //获取当前行(注:只能获取行中有值的项,为空的项不能获取)
                     var row = sheet.GetRow(r);
                     //读取每列
                     for (var j = 0; j < row.Cells.Count; j++)
@@ -173,7 +172,7 @@ namespace Main.DB.Import
                     }
                 case CellType.Unknown: //无法识别类型
                 default: //默认类型                    
-                    return cell.ToString();//
+                    return cell.ToString();
                 case CellType.String: //string 类型
                     return cell.StringCellValue;
                 case CellType.Formula: //带公式类型
@@ -209,7 +208,7 @@ namespace Main.DB.Import
                         isNull = false;
                     }
                 }
-                //将整行都为空白的记录
+                //将整行都为空白的记录进行记录
                 if (isNull)
                 {
                     removeList.Add(dt.Rows[i]);
@@ -227,10 +226,215 @@ namespace Main.DB.Import
         /// <summary>
         /// 将DataTable内的记录导入至数据库(使用SqlBulkCopy类进行批量插入)
         /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="dt"></param>
         /// <returns></returns>
         public string ImportExcelToDb(string tableName, DataTable dt)
         {
-            return null;
+            var result = "0";
+
+            try
+            {
+                #region
+                //if (tableName == "ColorantContrast")
+                //    for (var i = 0; i < dt.Rows.Count; i++)
+                //    {
+                //        for (var j = 0; j < dt.Columns.Count; j++)
+                //        {
+                //            dt.Rows[i].BeginEdit();
+                //            dt.Rows[i][3] = DateTime.Now.Date;
+                //            dt.Rows[i][4] = brandId;
+                //            dt.Rows[i].EndEdit();
+                //        }
+                //    }
+                #endregion
+
+                //若tablename为"AkzoFormula"时,表示要将传过来的DT分拆两个表进行插入
+                if (tableName == "AkzoFormula")
+                {
+                    //先将传过来的DT信息拆分并放到一个表头临时表并插入至数据表(插入至AkzoFormula表)
+                    var fdt = CreateFormualDt();
+                    var akzoDt=ChangeDt(dt, fdt, 0);
+                    Importdt("AkzoFormula", akzoDt);
+
+                    //再将传过来的DT信息拆分并放到一个表体临时表并插入至数据表(插入至AkzoFormulaEntry表)
+                    var entryDt = CreateFormualEntryDt();
+                    var akzoEntrydt = ChangeDt(dt, entryDt, 1);
+                    Importdt("AkzoFormulaEntry", akzoEntrydt);
+                }
+                //否则tablename为"ColorCodeContrast",表示插入色母对照表,按常规使用SqlBulkCopy方法进行插入数据
+                else
+                {
+                    Importdt(tableName,dt);
+                }
+            }
+            catch (Exception ex)
+            {
+                result = ex.Message;
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// 将记录导入至对应的表格
+        /// </summary>
+        /// <param name="tableName"></param>
+        /// <param name="dt"></param>
+        private void Importdt(string tableName, DataTable dt)
+        {
+            var conn = new Conn();
+            var sqlcon = conn.GetConnectionString();
+            // sqlcon.Open(); 若返回一个SqlConnection的话,必须要显式打开 
+            //注:1)要插入的DataTable内的字段数据类型必须要与数据库内的一致;并且要按数据表内的字段顺序 2)SqlBulkCopy类只提供将数据写入到数据库内
+            using (var sqlBulkCopy = new SqlBulkCopy(sqlcon))
+            {
+                sqlBulkCopy.BatchSize = 500;                    //表示以500行 为一个批次进行插入
+                sqlBulkCopy.DestinationTableName = tableName;  //数据库中对应的表名
+                sqlBulkCopy.NotifyAfter = dt.Rows.Count;      //赋值DataTable的行数
+                sqlBulkCopy.WriteToServer(dt);               //数据导入数据库
+                sqlBulkCopy.Close();                        //关闭连接 
+            }
+            // sqlcon.Close();
+        }
+
+        /// <summary>
+        /// 创建指定的表格表头信息(为最后插入时作准备)
+        /// </summary>
+        /// <returns></returns>
+        private DataTable CreateFormualDt()
+        {
+            var dt = new DataTable();
+            try
+            {
+                for (var i = 0; i < 2; i++)
+                {
+                    var dc = new DataColumn();
+
+                    switch (i)
+                    {
+                        case 0:
+                            dc.ColumnName = "Factory";
+                            dc.DataType = Type.GetType("System.String");
+                            break;
+                        case 1:
+                            dc.ColumnName = "FormulaCode";
+                            dc.DataType = Type.GetType("System.String");
+                            break;
+                    }
+                    dt.Columns.Add(dc);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return dt;
+        }
+
+        /// <summary>
+        /// 创建指定的表格表体信息(为最后插入时作准备)
+        /// </summary>
+        /// <returns></returns>
+        private DataTable CreateFormualEntryDt()
+        {
+            var dt = new DataTable();
+            try
+            {
+                for (var i = 0; i < 3; i++)
+                {
+                    var dc = new DataColumn();
+
+                    switch (i)
+                    {
+                        case 0:
+                            dc.ColumnName = "FormulaCode";
+                            dc.DataType = Type.GetType("System.String");
+                            break;
+                        case 1:
+                            dc.ColumnName = "AkzoColorant";
+                            dc.DataType = Type.GetType("System.String");
+                            break;
+                        case 2:
+                            dc.ColumnName = "ColorantParent";
+                            dc.DataType = Type.GetType("System.Decimal");
+                            break;
+                    }
+                    dt.Columns.Add(dc);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return dt;
+        }
+
+        /// <summary>
+        /// 分拆方法
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <param name="newdt"></param>
+        /// <param name="markId">0:表头 1:表体</param>
+        /// <returns></returns>
+        private DataTable ChangeDt(DataTable dt,DataTable newdt,int markId)
+        {
+            //中转值
+            var factory = string.Empty;
+            var akzoCode = string.Empty;
+
+            try
+            {
+                switch (markId)
+                {
+                    //为0时表示要创建表头信息
+                    case 0:
+                        foreach (DataRow rows in dt.Rows)
+                        {
+                            var newrow = newdt.NewRow();
+                            if (factory == "" && akzoCode == "")
+                            {
+                                newrow["Factory"] = rows["制造商"];
+                                newrow["FormulaCode"] = rows["Akzo配方号"];
+
+                                factory = Convert.ToString(rows["制造商"]);
+                                akzoCode = Convert.ToString(rows["Akzo配方号"]);
+                            }
+                            else
+                            {
+                                if (factory == Convert.ToString(rows["制造商"]) && akzoCode == Convert.ToString(rows["Akzo配方号"]))
+                                {
+                                    continue;
+                                }
+                                else
+                                {
+                                    newrow["Factory"] = rows["制造商"];
+                                    newrow["FormulaCode"] = rows["Akzo配方号"];
+
+                                    factory = Convert.ToString(rows["制造商"]);
+                                    akzoCode = Convert.ToString(rows["Akzo配方号"]);
+                                }
+                            }
+                            newdt.Rows.Add(newrow);
+                        }
+                        break;
+                    //为1时表示要创建表体信息
+                    case 1:
+                        foreach (DataRow rows in dt.Rows)
+                        {
+                            var newrow = newdt.NewRow();
+                            newrow["FormulaCode"] = rows["Akzo配方号"];
+                            newrow["AkzoColorant"] = rows["Akzo色母"];
+                            newrow["ColorantParent"] = rows["Akzo色母量"];
+                            newdt.Rows.Add(newrow);
+                        }
+                        break;
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return newdt;
         }
     }
 }

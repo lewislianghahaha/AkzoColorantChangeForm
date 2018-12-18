@@ -97,8 +97,10 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(858, 505);
+            this.ControlBox = false;
             this.Controls.Add(this.panel1);
             this.Controls.Add(this.MainMenu);
+            this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MainMenuStrip = this.MainMenu;
             this.Name = "ImportAkzoColorant";
             this.Text = "导入-Akzo与雅图色母对照表";
