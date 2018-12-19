@@ -46,7 +46,7 @@ namespace Main.Import
             load.StartPosition = FormStartPosition.CenterScreen;
             load.ShowDialog();
 
-            if (task.RestulTable.Rows.Count==0)throw new Exception("不能成功导入,请检查导入模板中是否有相同的Akzo单据编号.");
+            if (task.RestulTable.Rows.Count==0)throw new Exception("不能成功导入EXCEL内容,请检查模板是否正确.");
             MessageBox.Show("导入成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
             gvdtl.DataSource =task.RestulTable;
         }
@@ -81,13 +81,13 @@ namespace Main.Import
                     default:
                         throw (new Exception(result));
                 }
-                //清空原来DataGridView内的内容(无论成功与否都会执行)
-                ClearDt((DataTable)gvdtl.DataSource);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            //清空原来DataGridView内的内容(无论成功与否都会执行)
+            ClearDt((DataTable)gvdtl.DataSource);
         }
 
         /// <summary>

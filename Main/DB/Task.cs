@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Main.DB.Generate;
 using Main.DB.Import;
 using Main.DB.SearchUpdate;
 
@@ -14,6 +15,7 @@ namespace Main.DB
     {
         ImportData import=new ImportData();
         SearchData searchData=new SearchData();
+        GenerateRecord generate=new GenerateRecord();
 
 
         private int _taskid;
@@ -100,7 +102,7 @@ namespace Main.DB
                     break;
                 //运算功能
                 case 6:
-
+                    GenerateRecord(_factory,_pid);
                     break;
                 //导出功能
                 case 7:
@@ -137,7 +139,15 @@ namespace Main.DB
             _resultTable=searchData.SearchList();
         }
 
-
+        /// <summary>
+        /// 运算功能
+        /// </summary>
+        /// <param name="factory"></param>
+        /// <param name="pid"></param>
+        private void GenerateRecord(string factory,int pid)
+        {
+            _resultTable = generate.GetRecordToDataTable(factory,pid);
+        }
 
     }
 }

@@ -19,13 +19,12 @@ namespace Main.DB.Import
         /// <returns></returns>
         public DataTable OpenExceltoDt(string fileAddress, string tableName)
         {
-            var importExcelDt = new DataTable();
             var dt = new DataTable();
 
             try
             {
                 //使用NPOI技术进行导入EXCEL至DATATABLE
-                importExcelDt = OpenExcelToDataTable(fileAddress, tableName);
+                var importExcelDt = OpenExcelToDataTable(fileAddress, tableName);
                 //将从EXCEL过来的记录集为空的行清除
                 dt = RemoveEmptyRows(importExcelDt);
             }
@@ -254,7 +253,7 @@ namespace Main.DB.Import
                 {
                     //先将传过来的DT信息拆分并放到一个表头临时表并插入至数据表(插入至AkzoFormula表)
                     var fdt = CreateFormualDt();
-                    var akzoDt=ChangeDt(dt, fdt, 0);
+                    var akzoDt = ChangeDt(dt, fdt, 0);
                     Importdt("AkzoFormula", akzoDt);
 
                     //再将传过来的DT信息拆分并放到一个表体临时表并插入至数据表(插入至AkzoFormulaEntry表)

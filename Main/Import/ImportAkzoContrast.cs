@@ -80,13 +80,13 @@ namespace Main.Import
                     default:
                         throw (new Exception(result));
                 }
-                //清空原来DataGridView内的内容(无论成功与否都会执行)
-                ClearDt((DataTable)gvdtl.DataSource);
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            //清空原来DataGridView内的内容(无论成功与否都会执行)
+            ClearDt((DataTable)gvdtl.DataSource);
         }
 
         /// <summary>

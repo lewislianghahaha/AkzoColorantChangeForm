@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Drawing;
 using System.Threading;
 using System.Windows.Forms;
 using Main.DB;
@@ -125,7 +126,8 @@ namespace Main
                 if (task.RestulTable.Rows.Count == 0) throw new Exception("运算不能成功,请联系管理人员.");
                 MessageBox.Show("导入成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 gvdtl.DataSource = task.RestulTable;
-
+                //若GridView中有某行的"浓度转换系数"为0的话。就将该行转为红色
+                ChangeGrildColor((DataTable)gvdtl.DataSource);
             }
             catch (Exception ex)
             {
@@ -209,5 +211,23 @@ namespace Main
                 load.Close();
             }));
         }
+
+        /// <summary>
+        /// 对GRIDVIEW的行改变颜色(注:若浓度系数为0的话)
+        /// </summary>
+        /// <param name="dt"></param>
+        private void ChangeGrildColor(DataTable dt)
+        {
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                
+            }
+            foreach (DataRow rows in dt.Rows)
+            {
+
+                gvdtl.Rows[0].Cells[1].Style.BackColor = Color.Red;
+            }
+        }
+
     }
 }
