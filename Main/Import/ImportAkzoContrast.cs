@@ -31,23 +31,30 @@ namespace Main.Import
         /// <param name="e"></param>
         private void TmOpenExcel_Click(object sender, System.EventArgs e)
         {
-            var openFileDialog = new OpenFileDialog { Filter = "Xlsx文件|*.xlsx" };
-            if (openFileDialog.ShowDialog() != DialogResult.OK) return;
-            var fileAdd = openFileDialog.FileName;
+            try
+            {
+                var openFileDialog = new OpenFileDialog { Filter = "Xlsx文件|*.xlsx" };
+                if (openFileDialog.ShowDialog() != DialogResult.OK) return;
+                var fileAdd = openFileDialog.FileName;
 
-            //将所需的值赋到Task类内
-            task.TaskId = 1;
-            task.FileAddress = fileAdd;
-            task.Tablename = "";
+                //将所需的值赋到Task类内
+                task.TaskId = 1;
+                task.FileAddress = fileAdd;
+                task.Tablename = "";
 
-            //使用子线程工作(作用:通过调用子线程进行控制Load窗体的关闭情况)
-            new Thread(Start).Start();
-            load.StartPosition = FormStartPosition.CenterScreen;
-            load.ShowDialog();
+                //使用子线程工作(作用:通过调用子线程进行控制Load窗体的关闭情况)
+                new Thread(Start).Start();
+                load.StartPosition = FormStartPosition.CenterScreen;
+                load.ShowDialog();
 
-            if (task.RestulTable.Rows.Count == 0) throw new Exception("不能成功导入,请检查导入模板是否有误.");
-            MessageBox.Show("导入成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            gvdtl.DataSource = task.RestulTable;
+                if (task.RestulTable.Rows.Count == 0) throw new Exception("不能成功导入,请检查导入模板是否有误.");
+                //MessageBox.Show("导入成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                gvdtl.DataSource = task.RestulTable;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
 
         /// <summary>
@@ -75,7 +82,7 @@ namespace Main.Import
                 switch (result)
                 {
                     case "0":
-                        MessageBox.Show("导入成功!", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("导入成功!,可执行运算功能", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         break;
                     default:
                         throw (new Exception(result));

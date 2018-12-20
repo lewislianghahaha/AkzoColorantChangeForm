@@ -159,7 +159,8 @@ namespace Main.DB.Generate
             }
             catch (Exception ex)
             {
-
+                newdt.Rows.Clear();
+                newdt.Columns.Clear();
                 throw new Exception(ex.Message);
             }
 

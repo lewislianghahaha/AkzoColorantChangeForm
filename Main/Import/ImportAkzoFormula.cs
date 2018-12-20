@@ -47,7 +47,7 @@ namespace Main.Import
             load.ShowDialog();
 
             if (task.RestulTable.Rows.Count==0)throw new Exception("不能成功导入EXCEL内容,请检查模板是否正确.");
-            MessageBox.Show("导入成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+            //MessageBox.Show("导入成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
             gvdtl.DataSource =task.RestulTable;
         }
 
@@ -76,7 +76,7 @@ namespace Main.Import
                 switch (result)
                 {
                     case "0":
-                        MessageBox.Show("导入成功!", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("导入成功!可执行运算功能", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         break;
                     default:
                         throw (new Exception(result));

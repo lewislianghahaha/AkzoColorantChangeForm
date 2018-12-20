@@ -106,13 +106,13 @@
             this.tm3.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tmSearchColorant});
             this.tm3.Name = "tm3";
-            this.tm3.Size = new System.Drawing.Size(80, 21);
-            this.tm3.Text = "查阅及编辑";
+            this.tm3.Size = new System.Drawing.Size(44, 21);
+            this.tm3.Text = "查阅";
             // 
             // tmSearchColorant
             // 
             this.tmSearchColorant.Name = "tmSearchColorant";
-            this.tmSearchColorant.Size = new System.Drawing.Size(141, 22);
+            this.tmSearchColorant.Size = new System.Drawing.Size(152, 22);
             this.tmSearchColorant.Text = "Akzo对照表";
             // 
             // tmClose

@@ -5,6 +5,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Main.DB.Export;
 using Main.DB.Generate;
 using Main.DB.Import;
 using Main.DB.SearchUpdate;
@@ -16,7 +17,8 @@ namespace Main.DB
         ImportData import=new ImportData();
         SearchData searchData=new SearchData();
         GenerateRecord generate=new GenerateRecord();
-
+        SearchData search=new SearchData();
+        ExportData exportData=new ExportData();
 
         private int _taskid;
         private string _fileAddress;        //文件地址
@@ -57,9 +59,6 @@ namespace Main.DB
         public int pid {set { _pid = value; }}
 
 
-
-
-
         /// <summary>
         ///返回DataTable至主窗体
         /// </summary>
@@ -94,19 +93,15 @@ namespace Main.DB
                     break;
                 //查询色母对照表(色母对照表时使用)
                 case 4:
-
-                    break;
-                //编辑色母对照表(色母对照表时使用)
-                case 5:
-
+                    SearchProddt(_pid);
                     break;
                 //运算功能
-                case 6:
+                case 5:
                     GenerateRecord(_factory,_pid);
                     break;
                 //导出功能
-                case 7:
-
+                case 6:
+                    ExportDtToExcel(_fileAddress,_importTable);
                     break;
             }
         }
@@ -149,5 +144,21 @@ namespace Main.DB
             _resultTable = generate.GetRecordToDataTable(factory,pid);
         }
 
+        /// <summary>
+        /// 查询色母对照表
+        /// </summary>
+        /// <param name="pid"></param>
+        private void SearchProddt(int pid)
+        {
+            _resultTable = search.SearchProductList(pid);
+        }
+
+        /// <summary>
+        /// 将DATATABLE的数据导出至指定的EXCEL文件内
+        /// </summary>
+        private void ExportDtToExcel(string fileAddress, DataTable dt)
+        {
+            _importResult = exportData.ExportDttoExcel(fileAddress, dt);
+        }
     }
 }

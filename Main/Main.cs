@@ -5,6 +5,7 @@ using System.Threading;
 using System.Windows.Forms;
 using Main.DB;
 using Main.Import;
+using Main.Search;
 
 namespace Main
 {
@@ -114,7 +115,7 @@ namespace Main
                 var pid = Convert.ToInt32(dvProductlist["Id"]);
 
                 //将所需的值赋到Task类内
-                task.TaskId = 6;
+                task.TaskId = 5;
                 task.Factory = factoryName;
                 task.pid = pid;
 
@@ -124,14 +125,15 @@ namespace Main
                 load.ShowDialog();
 
                 if (task.RestulTable.Rows.Count == 0) throw new Exception("运算不能成功,请联系管理人员.");
-                MessageBox.Show("导入成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                //MessageBox.Show("运算成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
                 gvdtl.DataSource = task.RestulTable;
+                lblCount.Text = "查询的记录数为:"+ gvdtl.Rows.Count +"行";
                 //若GridView中有某行的"浓度转换系数"为0的话。就将该行转为红色
                 ChangeGrildColor((DataTable)gvdtl.DataSource);
             }
-            catch (Exception ex)
+            catch (Exception)
             {
-                MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show("请选择制造商下拉列表再继续", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
@@ -142,9 +144,16 @@ namespace Main
         /// <param name="e"></param>
         private void TmImportAkzo_Click(object sender, EventArgs e)
         {
-            var importAkzoFormula=new ImportAkzoFormula();
-            importAkzoFormula.StartPosition= FormStartPosition.CenterScreen;
-            importAkzoFormula.ShowDialog();
+            try
+            {
+                var importAkzoFormula = new ImportAkzoFormula();
+                importAkzoFormula.StartPosition = FormStartPosition.CenterScreen;
+                importAkzoFormula.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         /// <summary>
@@ -154,9 +163,16 @@ namespace Main
         /// <param name="e"></param>
         private void TmIAkzoContrast_Click(object sender, EventArgs e)
         {
-            var importAkzoColorant=new ImportAkzoColorant();
-            importAkzoColorant.StartPosition=FormStartPosition.CenterParent;
-            importAkzoColorant.ShowDialog();
+            try
+            {
+                var importAkzoColorant = new ImportAkzoColorant();
+                importAkzoColorant.StartPosition = FormStartPosition.CenterParent;
+                importAkzoColorant.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         /// <summary>
@@ -170,23 +186,57 @@ namespace Main
             {
                 if(gvdtl.Rows.Count==0) throw new Exception("没有执行结果,不能执行导出操作");
 
+                var saveFileDialog = new SaveFileDialog { Filter = "Xlsx文件|*.xlsx" };
+                if (saveFileDialog.ShowDialog() != DialogResult.OK) return;
+                var fileAdd = saveFileDialog.FileName;
 
+                //将所需的值赋到Task类内
+                task.TaskId = 6;
+                task.FileAddress = fileAdd;
+                task.ImporTable = (DataTable) gvdtl.DataSource;
 
+                //使用子线程工作(作用:通过调用子线程进行控制Load窗体的关闭情况)
+                new Thread(Start).Start();
+                load.StartPosition = FormStartPosition.CenterScreen;
+                load.ShowDialog();
+
+                var result = task.ImportResult;
+                switch (result)
+                {
+                    case "0":
+                        MessageBox.Show("导出成功!,可从EXCEL中查阅导出效果", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        break;
+                    default:
+                        throw (new Exception(result));
+                }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+            //清空原来DataGridView内的内容(无论成功与否都会执行)
+            ClearDt((DataTable)gvdtl.DataSource);
+            //将相关记录清空
+            lblCount.Text = "";
         }
 
         /// <summary>
-        /// 查询及编辑色母对照表
+        /// 查询色母对照表
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
         private void TmSearchColorant_Click(object sender, EventArgs e)
         {
-            throw new NotImplementedException();
+            try
+            {
+                var search=new SearchForm();
+                search.StartPosition=FormStartPosition.CenterScreen;
+                search.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         /// <summary>
@@ -213,21 +263,40 @@ namespace Main
         }
 
         /// <summary>
-        /// 对GRIDVIEW的行改变颜色(注:若浓度系数为0的话)
+        /// 对GRIDVIEW的行改变颜色(注:若浓度系数为0的话,就变红色)
         /// </summary>
         /// <param name="dt"></param>
         private void ChangeGrildColor(DataTable dt)
         {
-            for (int i = 0; i < dt.Rows.Count; i++)
+            for (var i = 0; i < dt.Rows.Count; i++)
             {
-                
-            }
-            foreach (DataRow rows in dt.Rows)
-            {
-
-                gvdtl.Rows[0].Cells[1].Style.BackColor = Color.Red;
+                var num = Convert.ToDecimal(dt.Rows[i][4]);
+                if (num != 0) continue;
+                gvdtl.Rows[i].Cells[0].Style.BackColor = Color.Red;
+                gvdtl.Rows[i].Cells[1].Style.BackColor = Color.Red;
+                gvdtl.Rows[i].Cells[2].Style.BackColor = Color.Red;
+                gvdtl.Rows[i].Cells[3].Style.BackColor = Color.Red;
+                gvdtl.Rows[i].Cells[4].Style.BackColor = Color.Red;
+                gvdtl.Rows[i].Cells[5].Style.BackColor = Color.Red;
+                gvdtl.Rows[i].Cells[6].Style.BackColor = Color.Red;
             }
         }
 
+        /// <summary>
+        /// 清空DataTable
+        /// </summary>
+        private void ClearDt(DataTable dt)
+        {
+            try
+            {
+                dt.Rows.Clear();
+                dt.Columns.Clear();
+                gvdtl.DataSource = dt;
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
     }
 }
