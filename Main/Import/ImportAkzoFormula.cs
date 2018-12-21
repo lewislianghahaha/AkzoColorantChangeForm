@@ -79,15 +79,15 @@ namespace Main.Import
                         MessageBox.Show("导入成功!可执行运算功能", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         break;
                     default:
-                        throw (new Exception(result));
+                        throw (new Exception("同一个制造商内不能有重复的Akzo配方号,请检查模板以及历史记录,确定后再次进行导入"));
                 }
             }
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
-            //清空原来DataGridView内的内容(无论成功与否都会执行)
-            ClearDt((DataTable)gvdtl.DataSource);
+            //清空原来DataGridView内的内容(无论成功与否都会执行,若DataGridView内没有记录的话就不用执行)
+            if(gvdtl.Rows.Count!=0) ClearDt((DataTable)gvdtl.DataSource);
         }
 
         /// <summary>
