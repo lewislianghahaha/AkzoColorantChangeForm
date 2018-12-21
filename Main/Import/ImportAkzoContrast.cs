@@ -82,7 +82,7 @@ namespace Main.Import
                 switch (result)
                 {
                     case "0":
-                        MessageBox.Show("导入成功!,可执行运算功能", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("导入成功!可执行运算功能", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         break;
                     default:
                         throw (new Exception("同一个产品系列下,Akzo色母与雅图色母是一一对应,请检查模板以及历史记录,确定后再次进行导入"));
@@ -93,8 +93,7 @@ namespace Main.Import
                 MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             //清空原来DataGridView内的内容(无论成功与否都会执行,若DataGridView内没有记录的话就不用执行)
-            if (gvdtl.Rows.Count!=0)
-                ClearDt((DataTable)gvdtl.DataSource);
+            if (gvdtl.Rows.Count!=0) ClearDt((DataTable)gvdtl.DataSource);
         }
 
         /// <summary>
