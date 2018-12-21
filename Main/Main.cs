@@ -204,7 +204,7 @@ namespace Main
                 switch (result)
                 {
                     case "0":
-                        MessageBox.Show("导出成功!,可从EXCEL中查阅导出效果", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                        MessageBox.Show("导出成功!可从EXCEL中查阅导出效果", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         break;
                     default:
                         throw (new Exception(result));
