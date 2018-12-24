@@ -129,7 +129,7 @@ namespace Main
                 gvdtl.DataSource = task.RestulTable;
                 lblCount.Text = "查询的记录数为:"+ gvdtl.Rows.Count +"行";
                 //若GridView中有某行的"浓度转换系数"为0的话。就将该行转为红色
-                ChangeGrildColor((DataTable)gvdtl.DataSource);
+                if (gvdtl.Rows.Count != 0) ChangeGrildColor((DataTable)gvdtl.DataSource);
             }
             catch (Exception)
             {
@@ -215,7 +215,7 @@ namespace Main
                 MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
             //清空原来DataGridView内的内容(无论成功与否都会执行)
-            ClearDt((DataTable)gvdtl.DataSource);
+            if (gvdtl.Rows.Count != 0) ClearDt((DataTable)gvdtl.DataSource);
             //将相关记录清空
             lblCount.Text = "";
         }
