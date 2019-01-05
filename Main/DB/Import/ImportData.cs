@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
+using System.Drawing;
+using System.Globalization;
 using System.IO;
-using NPOI.SS.Formula.Functions;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 
@@ -19,22 +20,24 @@ namespace Main.DB.Import
         /// <returns></returns>
         public DataTable OpenExceltoDt(string fileAddress, string tableName)
         {
-            var dt = new DataTable();
+            var resultdt = new DataTable();
 
             try
             {
                 //使用NPOI技术进行导入EXCEL至DATATABLE
                 var importExcelDt = OpenExcelToDataTable(fileAddress, tableName);
                 //将从EXCEL过来的记录集为空的行清除
-                dt = RemoveEmptyRows(importExcelDt);
+                var tempdt = RemoveEmptyRows(importExcelDt);
+                //对获取出来的DT中的"AKZO色母量"进行计算(注:利用同一个制造商及AKZO色号内的累积量,计算出对应的色母量)
+                resultdt = GenerateColorParcent(tempdt);
             }
             catch (Exception ex)
             {
-                dt.Rows.Clear();
-                dt.Columns.Clear();
+                resultdt.Rows.Clear();
+                resultdt.Columns.Clear();
                 throw new Exception(ex.Message);
             }
-            return dt;
+            return resultdt;
         }
 
         /// <summary>
@@ -57,6 +60,7 @@ namespace Main.DB.Import
                 var hearRow = sheet.GetRow(0);
 
                 //创建列标题
+                //"Akzo配方表"使用
                 if (tableName == "AkzoFormula")
                 {
                     for (int i = hearRow.FirstCellNum; i < hearRow.Cells.Count; i++)
@@ -70,7 +74,7 @@ namespace Main.DB.Import
                                 dataColumn.DataType = Type.GetType("System.String");
                                 break;
                             case 1:
-                                dataColumn.ColumnName = "Akzo配方号";
+                                dataColumn.ColumnName = "Akzo色号";
                                 dataColumn.DataType = Type.GetType("System.String");
                                 break;
                             case 2:
@@ -78,6 +82,10 @@ namespace Main.DB.Import
                                 dataColumn.DataType = Type.GetType("System.String");
                                 break;
                             case 3:
+                                dataColumn.ColumnName = "累积量";
+                                dataColumn.DataType = Type.GetType("System.Decimal"); 
+                                break;
+                            case 4:
                                 dataColumn.ColumnName = "Akzo色母量";
                                 dataColumn.DataType = Type.GetType("System.Decimal"); 
                                 break;
@@ -85,6 +93,7 @@ namespace Main.DB.Import
                         dt.Columns.Add(dataColumn);
                     }
                 }
+                //"色母对照表"使用
                 else
                 {
                     for (int i = hearRow.FirstCellNum; i < hearRow.Cells.Count; i++)
@@ -312,11 +321,11 @@ namespace Main.DB.Import
                     switch (i)
                     {
                         case 0:
-                            dc.ColumnName = "Factory";
+                            dc.ColumnName = "Factory";  //制造商
                             dc.DataType = Type.GetType("System.String");
                             break;
                         case 1:
-                            dc.ColumnName = "FormulaCode";
+                            dc.ColumnName = "ColorCode"; //Akzo色号
                             dc.DataType = Type.GetType("System.String");
                             break;
                     }
@@ -339,22 +348,26 @@ namespace Main.DB.Import
             var dt = new DataTable();
             try
             {
-                for (var i = 0; i < 3; i++)
+                for (var i = 0; i < 4; i++)
                 {
                     var dc = new DataColumn();
 
                     switch (i)
                     {
                         case 0:
-                            dc.ColumnName = "FormulaCode";
+                            dc.ColumnName = "ColorCode";        //Akzo色号
                             dc.DataType = Type.GetType("System.String");
                             break;
                         case 1:
-                            dc.ColumnName = "AkzoColorant";
+                            dc.ColumnName = "AkzoColorant";     //Akzo色母
                             dc.DataType = Type.GetType("System.String");
                             break;
                         case 2:
-                            dc.ColumnName = "ColorantParent";
+                            dc.ColumnName = "Cumulant";         //Akzo累积量
+                            dc.DataType = Type.GetType("System.Decimal"); 
+                            break;
+                        case 3:
+                            dc.ColumnName = "ColorantParent";  //AKZO色母量
                             dc.DataType = Type.GetType("System.Decimal");
                             break;
                     }
@@ -371,8 +384,8 @@ namespace Main.DB.Import
         /// <summary>
         /// 分拆方法
         /// </summary>
-        /// <param name="dt"></param>
-        /// <param name="newdt"></param>
+        /// <param name="dt">从DataGrild内获取的DATATABLE</param>
+        /// <param name="newdt">返回的新DATATABLE</param>
         /// <param name="markId">0:表头 1:表体</param>
         /// <returns></returns>
         private DataTable ChangeDt(DataTable dt,DataTable newdt,int markId)
@@ -393,24 +406,24 @@ namespace Main.DB.Import
                             if (factory == "" && akzoCode == "")
                             {
                                 newrow["Factory"] = rows["制造商"];
-                                newrow["FormulaCode"] = rows["Akzo配方号"];
+                                newrow["ColorCode"] = rows["Akzo色号"];
 
                                 factory = Convert.ToString(rows["制造商"]);
-                                akzoCode = Convert.ToString(rows["Akzo配方号"]);
+                                akzoCode = Convert.ToString(rows["Akzo色号"]);
                             }
                             else
                             {
-                                if (factory == Convert.ToString(rows["制造商"]) && akzoCode == Convert.ToString(rows["Akzo配方号"]))
+                                if (factory == Convert.ToString(rows["制造商"]) && akzoCode == Convert.ToString(rows["Akzo色号"]))
                                 {
                                     continue;
                                 }
                                 else
                                 {
                                     newrow["Factory"] = rows["制造商"];
-                                    newrow["FormulaCode"] = rows["Akzo配方号"];
+                                    newrow["ColorCode"] = rows["Akzo色号"];
 
                                     factory = Convert.ToString(rows["制造商"]);
-                                    akzoCode = Convert.ToString(rows["Akzo配方号"]);
+                                    akzoCode = Convert.ToString(rows["Akzo色号"]);
                                 }
                             }
                             newdt.Rows.Add(newrow);
@@ -421,8 +434,9 @@ namespace Main.DB.Import
                         foreach (DataRow rows in dt.Rows)
                         {
                             var newrow = newdt.NewRow();
-                            newrow["FormulaCode"] = rows["Akzo配方号"];
+                            newrow["ColorCode"] = rows["Akzo色号"];
                             newrow["AkzoColorant"] = rows["Akzo色母"];
+                            newrow["Cumulant"] = rows["累积量"];
                             newrow["ColorantParent"] = rows["Akzo色母量"];
                             newdt.Rows.Add(newrow);
                         }
@@ -434,6 +448,56 @@ namespace Main.DB.Import
                 throw new Exception(ex.Message);
             }
             return newdt;
+        }
+
+        /// <summary>
+        /// 利用累积量计算出对应的Akzo色母量(注:对传递过来的DT进行更新并赋值；最后输出)
+        /// </summary>
+        /// <param name="tempdt">为从EXCEL里导入的DT记录</param>
+        /// <returns></returns>
+        private DataTable GenerateColorParcent(DataTable tempdt)
+        {
+            string markid=string.Empty;
+            //记录累积量
+            decimal cumulantTemp=0; 
+
+            try
+            {
+                //创建表头临时表
+                var fdt = CreateFormualDt();
+                //根据EXCEL的DT获取其表头信息,以DT为返回结果
+                var akzoDt = ChangeDt(tempdt, fdt, 0);
+
+                foreach (DataRow akzorows in akzoDt.Rows)
+                {
+                    var rows = tempdt.Select("Akzo色号 = '" + akzorows[1] + "' and 制造商 = '" + akzorows[0] + "'");
+
+                    foreach (DataRow row in rows)
+                    {
+                        row.BeginEdit();
+                        //运算AKZO色母量;注:除第一行的AKZO色母量就是累积量外。其它行的AKZO色母量就是该行的累积量与上一行的累积量进行相减得出
+                        if (markid == "")
+                        {
+                            row[4] = Convert.ToDecimal(row[3]);
+                            cumulantTemp = Convert.ToDecimal(row[3]);
+                            markid = "Y";
+                        }
+                        else
+                        {
+                            row[4] = Convert.ToDecimal(row[3])-cumulantTemp;
+                            cumulantTemp = Convert.ToDecimal(row[3]);
+                        }
+                        row.EndEdit();
+                    }
+                    //每次循环完将markid标记初始化
+                    markid = "";
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return tempdt;
         }
     }
 }

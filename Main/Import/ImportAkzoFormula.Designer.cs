@@ -89,9 +89,9 @@
             this.label1.ForeColor = System.Drawing.Color.Red;
             this.label1.Location = new System.Drawing.Point(13, 7);
             this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(293, 12);
+            this.label1.Size = new System.Drawing.Size(329, 12);
             this.label1.TabIndex = 0;
-            this.label1.Text = "注:导入时注意要点:同一个制造商只有一个Akzo配方号";
+            this.label1.Text = "注:导入时注意要点:同一个制造商只有一个Akzo色号与之对应";
             // 
             // panel2
             // 

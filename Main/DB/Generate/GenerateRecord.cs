@@ -26,7 +26,7 @@ namespace Main.DB.Generate
 
         private string _searchAkzoEntry = @"
                                                     SELECT b.* FROM dbo.AkzoFormula a
-                                                    INNER JOIN dbo.AkzoFormulaEntry b ON a.FormulaCode=b.FormulaCode
+                                                    INNER JOIN dbo.AkzoFormulaEntry b ON a.ColorCode=b.ColorCode
                                                     WHERE a.Factory='{0}'
                                                ";
 
@@ -44,7 +44,7 @@ namespace Main.DB.Generate
 
         private string _searchColordtl = @"
                                                   SELECT * FROM dbo.ColorCodeContrast WHERE TypeId='{0}'
-                                              ";
+                                          ";
 
         #endregion
 
@@ -106,16 +106,17 @@ namespace Main.DB.Generate
                 //以AKZO表头作循环条件
                 foreach (DataRow rows in akzodt.Rows)
                 {
-                    //根据AKZO表头的"AKZO号"作为条件，在ENTRY表内查询相关记录集
-                    var row = akzoEntrydt.Select("FormulaCode='" + rows[1] + "'");
+                    //根据AKZO表头的"AKZO色号"作为条件，在ENTRY表内查询相关记录集
+                    var row = akzoEntrydt.Select("ColorCode='" + rows[1] + "'");
                     //循环读取row数组(注:在此过程中要计算出中间值以及总计)
                     for (var i = 0; i < row.Length; i++)
                     {
                         var newrow = tempdt.NewRow();
-                        newrow["FactoryCode"] = rows["Factory"];  //制造商
-                        newrow["AkzoCode"] = rows["FormulaCode"]; //AKZO号
-                        newrow["AkzoColorant"] = row[i][1];       //AKZO色母
-                        newrow["AkzoColorantParent"] = row[i][2]; //AKZO色母量
+                        newrow["FactoryCode"] = rows["Factory"];      //制造商
+                        newrow["ColorCode"] = rows["ColorCode"];     //AKZO色号
+                        newrow["AkzoColorant"] = row[i][1];         //AKZO色母
+                        newrow["Cumulant"] = row[i][2];            //AKZO累积量
+                        newrow["AkzoColorantParent"] = row[i][3]; //AKZO色母量
                         //以AKZO色母号为条件,查询"色母对照表"的相关记录
                         var colorantrow = colorantdt.Select("AkzoColorant='" + row[i][1] + "'");
                         //当查询不到结果时,转换系数为0，而雅图色母为空显示
@@ -145,8 +146,9 @@ namespace Main.DB.Generate
                     {
                         var finialrow = newdt.NewRow();
                         finialrow["制造商"] = temprows["FactoryCode"];
-                        finialrow["Akzo配方号"] = temprows["AkzoCode"];
+                        finialrow["Akzo色号"] = temprows["ColorCode"];
                         finialrow["Akzo色母"] = temprows["AkzoColorant"];
+                        finialrow["累积量"] = temprows["Cumulant"];
                         finialrow["Akzo色母量"] = temprows["AkzoColorantParent"];
                         finialrow["浓度转换系数"] = temprows["Num"];
                         finialrow["雅图色母"] = temprows["YatuColorant"];
@@ -245,7 +247,7 @@ namespace Main.DB.Generate
 
             try
             {
-                for (var i = 0; i < 7; i++)
+                for (var i = 0; i < 8; i++)
                 {
                     var dc = new DataColumn();
 
@@ -256,7 +258,7 @@ namespace Main.DB.Generate
                             dc.DataType = Type.GetType("System.String");
                             break;
                         case 1:
-                            dc.ColumnName = "Akzo配方号";
+                            dc.ColumnName = "Akzo色号";
                             dc.DataType = Type.GetType("System.String");
                             break;
                         case 2:
@@ -264,18 +266,22 @@ namespace Main.DB.Generate
                             dc.DataType = Type.GetType("System.String");
                             break;
                         case 3:
+                            dc.ColumnName = "累积量";
+                            dc.DataType = Type.GetType("System.Decimal");
+                            break;
+                        case 4:
                             dc.ColumnName = "Akzo色母量";
                             dc.DataType = Type.GetType("System.Decimal"); 
                             break;
-                        case 4:
+                        case 5:
                             dc.ColumnName = "浓度转换系数";
                             dc.DataType = Type.GetType("System.Decimal");
                             break;
-                        case 5:
+                        case 6:
                             dc.ColumnName = "雅图色母";
                             dc.DataType = Type.GetType("System.String");
                             break;
-                        case 6:
+                        case 7:
                             dc.ColumnName = "雅图新色母量";
                             dc.DataType = Type.GetType("System.Decimal");
                             break;
@@ -300,7 +306,7 @@ namespace Main.DB.Generate
             var dt = new DataTable();
             try
             {
-                for (var i = 0; i < 7; i++)
+                for (var i = 0; i < 8; i++)
                 {
                     var dc = new DataColumn();
 
@@ -310,27 +316,31 @@ namespace Main.DB.Generate
                             dc.ColumnName = "FactoryCode";
                             dc.DataType = Type.GetType("System.String");
                             break;
-                        case 1: //AKZO号
-                            dc.ColumnName = "AkzoCode";
+                        case 1: //AKZO色号
+                            dc.ColumnName = "ColorCode";
                             dc.DataType = Type.GetType("System.String");
                             break;
                         case 2: //AKZO色母
                             dc.ColumnName = "AkzoColorant";
                             dc.DataType = Type.GetType("System.String");
                             break;
-                        case 3: //AKZO色母量
+                        case 3://累积量
+                            dc.ColumnName = "Cumulant";
+                            dc.DataType = Type.GetType("System.Decimal");
+                            break;
+                        case 4: //AKZO色母量
                             dc.ColumnName = "AkzoColorantParent";
                             dc.DataType = Type.GetType("System.Decimal");
                             break;
-                        case 4: //浓度转换系数
+                        case 5: //浓度转换系数
                             dc.ColumnName = "Num";
                             dc.DataType = Type.GetType("System.Decimal");
                             break;
-                        case 5: //Yatu色母
+                        case 6: //Yatu色母
                             dc.ColumnName = "YatuColorant";
                             dc.DataType = Type.GetType("System.String");
                             break;
-                        case 6://色母量中间值
+                        case 7://色母量中间值
                             dc.ColumnName = "tempNum";
                             dc.DataType = Type.GetType("System.Decimal");
                             break;

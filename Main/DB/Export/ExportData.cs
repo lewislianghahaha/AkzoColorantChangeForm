@@ -45,15 +45,18 @@ namespace Main.DB.Export
                                 row.CreateCell(l).SetCellValue("Akzo色母");
                                 break;
                             case 3:
-                                row.CreateCell(l).SetCellValue("Akzo色母量");
+                                row.CreateCell(l).SetCellValue("累积量");
                                 break;
                             case 4:
-                                row.CreateCell(l).SetCellValue("浓度转换系数");
+                                row.CreateCell(l).SetCellValue("Akzo色母量");
                                 break;
                             case 5:
-                                row.CreateCell(l).SetCellValue("雅图色母");
+                                row.CreateCell(l).SetCellValue("浓度转换系数");
                                 break;
                             case 6:
+                                row.CreateCell(l).SetCellValue("雅图色母");
+                                break;
+                            case 7:
                                 row.CreateCell(l).SetCellValue("雅图新色母量");
                                 break;
                         }
