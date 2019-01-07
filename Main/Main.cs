@@ -270,7 +270,7 @@ namespace Main
         {
             for (var i = 0; i < dt.Rows.Count; i++)
             {
-                var num = Convert.ToDecimal(dt.Rows[i][4]);
+                var num = Convert.ToDecimal(dt.Rows[i][5]);
                 if (num != 0) continue;
                 gvdtl.Rows[i].Cells[0].Style.BackColor = Color.Red;
                 gvdtl.Rows[i].Cells[1].Style.BackColor = Color.Red;
@@ -279,6 +279,7 @@ namespace Main
                 gvdtl.Rows[i].Cells[4].Style.BackColor = Color.Red;
                 gvdtl.Rows[i].Cells[5].Style.BackColor = Color.Red;
                 gvdtl.Rows[i].Cells[6].Style.BackColor = Color.Red;
+                gvdtl.Rows[i].Cells[7].Style.BackColor = Color.Red;
             }
         }
 
