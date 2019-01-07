@@ -23,7 +23,9 @@ namespace Main.DB.SearchUpdate
         #region 查询产品系列对应的记录集
 
             private string _SearchProdList = @"
-                                                   SELECT * FROM dbo.ColorCodeContrast WHERE TypeId='{0}'
+                                                   SELECT a.AkzoColorant as 'Akzo色母',a.Colorant as '雅图色母',
+                                                          a.Num as '浓度转换系数'
+                                                   FROM dbo.ColorCodeContrast a WHERE TypeId='{0}'
                                               ";
 
         #endregion
