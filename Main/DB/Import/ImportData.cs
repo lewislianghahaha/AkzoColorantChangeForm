@@ -2,9 +2,8 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
-using System.Drawing;
-using System.Globalization;
 using System.IO;
+using Main.DB.SearchUpdate;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 
@@ -28,7 +27,7 @@ namespace Main.DB.Import
                 var importExcelDt = OpenExcelToDataTable(fileAddress, tableName);
                 //将从EXCEL过来的记录集为空的行清除
                 var tempdt = RemoveEmptyRows(importExcelDt);
-                //对获取出来的DT中的"AKZO色母量"进行计算(注:利用同一个制造商及AKZO色号内的累积量,计算出对应的色母量)
+                //对获取出来的DT中的"AKZO色母量"进行计算并填充(注:利用同一个制造商及AKZO色号内的累积量,计算出对应的色母量)
                 resultdt = GenerateColorParcent(tempdt);
             }
             catch (Exception ex)
@@ -263,7 +262,9 @@ namespace Main.DB.Import
                     //先将传过来的DT信息拆分并放到一个表头临时表并插入至数据表(插入至AkzoFormula表)
                     var fdt = CreateFormualDt();
                     var akzoDt = ChangeDt(dt, fdt, 0);
-                    Importdt("AkzoFormula", akzoDt);
+                    //将获取过来的DT放到数据AkzoFormula表中判断,若相同,即不用再进行插入
+                    var resultdt=Checkdt(akzoDt);
+                    if(resultdt.Rows.Count>0) Importdt("AkzoFormula", resultdt);
 
                     //再将传过来的DT信息拆分并放到一个表体临时表并插入至数据表(插入至AkzoFormulaEntry表)
                     var entryDt = CreateFormualEntryDt();
@@ -403,6 +404,7 @@ namespace Main.DB.Import
                         foreach (DataRow rows in dt.Rows)
                         {
                             var newrow = newdt.NewRow();
+
                             if (factory == "" && akzoCode == "")
                             {
                                 newrow["Factory"] = rows["制造商"];
@@ -499,5 +501,41 @@ namespace Main.DB.Import
             }
             return tempdt;
         }
+
+        /// <summary>
+        /// 检查准备插入的表头DT内的行记录是否已在AkzoFormula表内存在,若存在,即不
+        /// </summary>
+        /// <returns></returns>
+        private DataTable Checkdt(DataTable dt)
+        {
+            var removeList = new List<DataRow>();
+
+            try
+            {
+                var searchData = new SearchData();
+                var searchdt = searchData.SearchFormulaList();
+
+                for (var i = 0; i < dt.Rows.Count; i++)
+                {
+                    var row = searchdt.Select("Factory = '" + dt.Rows[i][0] + "' and ColorCode = '" + dt.Rows[i][1] + "'");
+                    //将重复的记录放到removeList内(在后面用于循环删除)
+                    if (row.Length > 0)
+                    {
+                        removeList.Add(dt.Rows[i]);
+                    }
+                }
+                //将整理出来的重复行通过循环进行删除
+                for (var j = 0; j < removeList.Count; j++)
+                {
+                    dt.Rows.Remove(removeList[j]);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return dt;
+        }
+
     }
 }

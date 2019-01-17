@@ -95,7 +95,6 @@ namespace Main.Search
             //MessageBox.Show("查询成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
             gvdtl.DataSource = task.RestulTable;
             lblcount.Text = "查询的记录数为:" + gvdtl.Rows.Count + "行";
-
         }
 
         /// <summary>

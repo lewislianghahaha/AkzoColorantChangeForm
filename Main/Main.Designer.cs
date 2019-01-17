@@ -47,6 +47,7 @@
             this.lblCount = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.gvdtl = new System.Windows.Forms.DataGridView();
+            this.tmSearchFormula = new System.Windows.Forms.ToolStripMenuItem();
             this.MainMenu.SuspendLayout();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -104,7 +105,8 @@
             // tm3
             // 
             this.tm3.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.tmSearchColorant});
+            this.tmSearchColorant,
+            this.tmSearchFormula});
             this.tm3.Name = "tm3";
             this.tm3.Size = new System.Drawing.Size(44, 21);
             this.tm3.Text = "查阅";
@@ -219,6 +221,12 @@
             this.gvdtl.Size = new System.Drawing.Size(972, 468);
             this.gvdtl.TabIndex = 0;
             // 
+            // tmSearchFormula
+            // 
+            this.tmSearchFormula.Name = "tmSearchFormula";
+            this.tmSearchFormula.Size = new System.Drawing.Size(152, 22);
+            this.tmSearchFormula.Text = "Akzo配方表";
+            // 
             // Main
             // 
             this.AcceptButton = this.btnGenerate;
@@ -268,6 +276,7 @@
         private System.Windows.Forms.Label lblCount;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.DataGridView gvdtl;
+        private System.Windows.Forms.ToolStripMenuItem tmSearchFormula;
     }
 }
 

@@ -54,7 +54,7 @@ namespace Main.Import
         /// <summary>
         /// 导入功能
         /// </summary>
-        /// <param name="sender"></param>
+        /// <param name="senhttp://sh.qihoo.com/pc/home?ch=youlike&sign=360_0ed9f8f8der"></param>
         /// <param name="e"></param>
         private void TmImport_Click(object sender, EventArgs e)
         {
@@ -79,7 +79,7 @@ namespace Main.Import
                         MessageBox.Show("导入成功!可执行运算功能", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         break;
                     default:
-                        throw (new Exception("同一个制造商内不能有重复的Akzo配方号,请检查模板以及历史记录,确定后再次进行导入"));
+                        throw (new Exception("导入有误,请到主窗体通过查阅->Akzo配方表进行查阅,确定后再次进行导入"));
                 }
             }
             catch (Exception ex)

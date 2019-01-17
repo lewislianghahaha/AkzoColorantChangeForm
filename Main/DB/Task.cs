@@ -87,7 +87,7 @@ namespace Main.DB
                 case 2:
                     ImportExcelToDb(_tablename,_importTable);
                     break;
-                //下拉列表数据获取(查询)
+                //下拉列表数据获取(查询)“制造商”
                 case 3:
                     SearchList();
                     break;
@@ -102,6 +102,10 @@ namespace Main.DB
                 //导出功能
                 case 6:
                     ExportDtToExcel(_fileAddress,_importTable);
+                    break;
+                //查询AKZO配方(查询AKZO配方表使用)
+                case 7:
+                    SearchFormula(_factory);
                     break;
             }
         }
@@ -160,5 +164,15 @@ namespace Main.DB
         {
             _importResult = exportData.ExportDttoExcel(fileAddress, dt);
         }
+
+        /// <summary>
+        /// 查询AKZO配方记录明细表
+        /// </summary>
+        /// <param name="factory"></param>
+        private void SearchFormula(string factory)
+        {
+            _resultTable = search.SearchdtlList(factory);
+        }
+
     }
 }

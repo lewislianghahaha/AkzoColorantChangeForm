@@ -30,6 +30,7 @@ namespace Main
             tmClose.Click += TmClose_Click;
             btnGenerate.Click += BtnGenerate_Click;
             comFactory.Click += ComFactory_Click;
+            tmSearchFormula.Click += TmSearchFormula_Click;
         }
 
         /// <summary>
@@ -232,6 +233,25 @@ namespace Main
                 var search=new SearchForm();
                 search.StartPosition=FormStartPosition.CenterScreen;
                 search.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// 查询AKZO配方表
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void TmSearchFormula_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                var fsearch=new SearchFormulaForm();
+                fsearch.StartPosition=FormStartPosition.CenterScreen;
+                fsearch.ShowDialog();
             }
             catch (Exception ex)
             {

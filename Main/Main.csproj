@@ -103,6 +103,12 @@
     <Compile Include="Search\SearchForm.Designer.cs">
       <DependentUpon>SearchForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Search\SearchFormulaForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Search\SearchFormulaForm.Designer.cs">
+      <DependentUpon>SearchFormulaForm.cs</DependentUpon>
+    </Compile>
     <EmbeddedResource Include="Import\ImportAkzoFormula.resx">
       <DependentUpon>ImportAkzoFormula.cs</DependentUpon>
     </EmbeddedResource>
@@ -126,6 +132,9 @@
     </Compile>
     <EmbeddedResource Include="Search\SearchForm.resx">
       <DependentUpon>SearchForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Search\SearchFormulaForm.resx">
+      <DependentUpon>SearchFormulaForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="bin\Debug\Main.exe.config" />
     <None Include="bin\Debug\Main.vshost.exe.config" />
