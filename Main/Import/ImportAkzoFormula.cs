@@ -79,7 +79,7 @@ namespace Main.Import
                         MessageBox.Show("导入成功!可执行运算功能", "成功", MessageBoxButtons.OK, MessageBoxIcon.Information);
                         break;
                     default:
-                        throw (new Exception("导入有误,请到主窗体通过查阅->Akzo配方表进行查阅,确定后再次进行导入"));
+                        throw (new Exception("导入有误,出现了重复项,请到主窗体通过查阅->Akzo配方表进行查阅,确定后再次进行导入"));
                 }
             }
             catch (Exception ex)

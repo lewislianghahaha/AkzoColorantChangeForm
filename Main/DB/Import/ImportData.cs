@@ -392,8 +392,9 @@ namespace Main.DB.Import
         private DataTable ChangeDt(DataTable dt,DataTable newdt,int markId)
         {
             //中转值
-            var factory = string.Empty;
-            var akzoCode = string.Empty;
+            //var factory = string.Empty;
+            //var akzoCode = string.Empty;
+            var Marid = 0;
 
             try
             {
@@ -405,28 +406,30 @@ namespace Main.DB.Import
                         {
                             var newrow = newdt.NewRow();
 
-                            if (factory == "" && akzoCode == "")
+                            //if (factory == "" && akzoCode == "")
+                            if(Marid==0)
                             {
                                 newrow["Factory"] = rows["制造商"];
                                 newrow["ColorCode"] = rows["Akzo色号"];
 
-                                factory = Convert.ToString(rows["制造商"]);
-                                akzoCode = Convert.ToString(rows["Akzo色号"]);
+                                Marid = 1;
+
+                                //factory = Convert.ToString(rows["制造商"]);
+                                //akzoCode = Convert.ToString(rows["Akzo色号"]);
                             }
                             else
                             {
-                                if (factory == Convert.ToString(rows["制造商"]) && akzoCode == Convert.ToString(rows["Akzo色号"]))
+                                //判断若循环获取的制造商,AKZO色号在NEWDT内存在的话就不用插入
+                                if (/*factory == Convert.ToString(rows["制造商"]) && akzoCode == Convert.ToString(rows["Akzo色号"])
+                                    || */Searchrepetition(Convert.ToString(rows["制造商"]), Convert.ToString(rows["Akzo色号"]),newdt)>0)
                                 {
                                     continue;
                                 }
-                                else
-                                {
-                                    newrow["Factory"] = rows["制造商"];
-                                    newrow["ColorCode"] = rows["Akzo色号"];
+                                newrow["Factory"] = rows["制造商"];
+                                newrow["ColorCode"] = rows["Akzo色号"];
 
-                                    factory = Convert.ToString(rows["制造商"]);
-                                    akzoCode = Convert.ToString(rows["Akzo色号"]);
-                                }
+                                //factory = Convert.ToString(rows["制造商"]);
+                                //akzoCode = Convert.ToString(rows["Akzo色号"]);
                             }
                             newdt.Rows.Add(newrow);
                         }
@@ -450,6 +453,25 @@ namespace Main.DB.Import
                 throw new Exception(ex.Message);
             }
             return newdt;
+        }
+
+        /// <summary>
+        /// 判断插入的DT是否有重复(注:当插入数据至AkzoFormula时使用)
+        /// </summary>
+        /// <param name="factory">获取过来的制造商</param>
+        /// <param name="akzoCode">获取过来的Akzo号</param>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        private int Searchrepetition(string factory,string akzoCode,DataTable dt)
+        {
+            var result = 0;
+            var row = dt.Select("Factory = '" + factory + "' and ColorCode = '" + akzoCode + "'");
+            //将重复的行数返回1
+            if (row.Length > 0)
+            {
+                result = 1;
+            }
+            return result;
         }
 
         /// <summary>
@@ -515,6 +537,8 @@ namespace Main.DB.Import
                 var searchData = new SearchData();
                 var searchdt = searchData.SearchFormulaList();
 
+                //当查询AkzoFormula表有记录时才执行
+                if(searchdt.Rows.Count>0)
                 for (var i = 0; i < dt.Rows.Count; i++)
                 {
                     var row = searchdt.Select("Factory = '" + dt.Rows[i][0] + "' and ColorCode = '" + dt.Rows[i][1] + "'");

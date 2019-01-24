@@ -132,9 +132,9 @@ namespace Main
                 //若GridView中有某行的"浓度转换系数"为0的话。就将该行转为红色
                 if (gvdtl.Rows.Count != 0) ChangeGrildColor((DataTable)gvdtl.DataSource);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                MessageBox.Show("请选择制造商下拉列表再继续", "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                MessageBox.Show(ex.Message.Contains("InvalidArgument") ? "请选择制造商下拉列表" : ex.Message, "错误",MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
 
