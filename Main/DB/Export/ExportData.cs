@@ -39,7 +39,7 @@ namespace Main.DB.Export
                                 row.CreateCell(l).SetCellValue("制造商");
                                 break;
                             case 1:
-                                row.CreateCell(l).SetCellValue("Akzo配方号");
+                                row.CreateCell(l).SetCellValue("Akzo色号");
                                 break;
                             case 2:
                                 row.CreateCell(l).SetCellValue("Akzo色母");
