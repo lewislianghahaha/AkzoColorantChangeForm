@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Management;
 using System.Threading;
 using System.Windows.Forms;
 using Main.DB;
@@ -78,23 +79,32 @@ namespace Main.Search
         /// <param name="e"></param>
         private void BtnSearch_Click(object sender, System.EventArgs e)
         {
-            //获取所选择的“产品系列”下拉列表值
-            var dvProductlist = (DataRowView)comList.Items[comList.SelectedIndex];
-            var pid = Convert.ToInt32(dvProductlist["Id"]);
+            try
+            {
+                //获取所选择的“产品系列”下拉列表值
+                var dvProductlist = (DataRowView)comList.Items[comList.SelectedIndex];
+                var pid = Convert.ToInt32(dvProductlist["Id"]);
 
-            //将所需的值赋到Task类内
-            task.TaskId = 4;
-            task.pid =pid;
+                //将所需的值赋到Task类内
+                task.TaskId = 4;
+                task.pid = pid;
+                task.MacAdd = GetMacAddress(); //获取MAC地址
+                task.Dt = dtp.Value.Date; //获取指定的导入日期
 
-            //使用子线程工作(作用:通过调用子线程进行控制Load窗体的关闭情况)
-            new Thread(Start).Start();
-            load.StartPosition = FormStartPosition.CenterScreen;
-            load.ShowDialog();
+                //使用子线程工作(作用:通过调用子线程进行控制Load窗体的关闭情况)
+                new Thread(Start).Start();
+                load.StartPosition = FormStartPosition.CenterScreen;
+                load.ShowDialog();
 
-            if (task.RestulTable.Rows.Count == 0) throw new Exception("查询不成功,请联系管理人员.");
-            //MessageBox.Show("查询成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            gvdtl.DataSource = task.RestulTable;
-            lblcount.Text = "查询的记录数为:" + gvdtl.Rows.Count + "行";
+                if (task.RestulTable.Rows.Count == 0) throw new Exception("查询不成功,请联系管理人员.");
+                if (task.RestulTable.Rows.Count > 0)
+                    gvdtl.DataSource = task.RestulTable;
+                lblcount.Text = "查询的记录数为:" + gvdtl.Rows.Count + "行";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         /// <summary>
@@ -115,6 +125,34 @@ namespace Main.Search
             this.Invoke((ThreadStart)(() => {
                 load.Close();
             }));
+        }
+
+        /// <summary>
+        /// 获取MAC地址
+        /// </summary>
+        /// <returns></returns>
+        private string GetMacAddress()
+        {
+            try
+            {
+                string strMac = string.Empty;
+                var mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
+                var moc = mc.GetInstances();
+                foreach (var mo in moc)
+                {
+                    if ((bool)mo["IPEnabled"] == true)
+                    {
+                        strMac = mo["MacAddress"].ToString();
+                    }
+                }
+                moc = null;
+                mc = null;
+                return strMac;
+            }
+            catch
+            {
+                return "unknown";
+            }
         }
     }
 }

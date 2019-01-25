@@ -7,23 +7,23 @@ namespace Main.DB.Generate
 {
     public class GenerateRecord
     {
-        #region 根据指定条件查询出“AkzoFormula”表头信息
+        #region 根据指定条件查询出“AkzoFormula”表头信息(注:暂不需要使用)
 
-            private string _searchAkzo = @"
+        private string _searchAkzo = @"
                                             SELECT * FROM dbo.AkzoFormula WHERE Factory='{0}'
                                           ";
 
         #endregion
 
-        #region 根据指定条件查询出“AkzoFormula”表头信息(当制造商选了“全部”时执行)
+        #region 根据指定条件查询出“AkzoFormula”表头信息(当制造商选了“全部”时执行) 注:使用MAC地址及当天日期进行查询
 
         private string _searchAkzoAll = @"
-                                            SELECT * FROM dbo.AkzoFormula
+                                            SELECT * FROM dbo.AkzoFormula a where a.MacAdd='{0}' AND a.ImportDt='{1}'
                                           ";
 
         #endregion
 
-        #region 根据指定条件查询出"AkzoFormulaEntry"表体信息
+        #region 根据指定条件查询出"AkzoFormulaEntry"表体信息(注:暂不需要使用)
 
         private string _searchAkzoEntry = @"
                                                     SELECT b.* FROM dbo.AkzoFormula a
@@ -33,18 +33,18 @@ namespace Main.DB.Generate
 
         #endregion
 
-        #region 根据指定条件查询出"AkzoFormulaEntry"表体信息(当制造商选了“全部”时执行)
+        #region 根据指定条件查询出"AkzoFormulaEntry"表体信息(当制造商选了“全部”时执行)  注:使用MAC地址及当天日期进行查询
 
         private string _searchAkzoEntryAll = @"
-                                                   SELECT * FROM AkzoFormulaEntry
+                                                   SELECT * FROM AkzoFormulaEntry a where a.MacAdd='{0}' and a.ImportDt='{1}'
                                               ";
 
         #endregion
 
-        #region 根据条件查询出"ColorCodeConstrast"表体信息
+        #region 根据条件查询出"ColorCodeConstrast"表体信息  注:使用MAC地址及当天日期进行查询
 
         private string _searchColordtl = @"
-                                                  SELECT * FROM dbo.ColorCodeContrast WHERE TypeId='{0}'
+                                                  SELECT * FROM dbo.ColorCodeContrast a WHERE a.TypeId='{0}' and  a.MacAdd='{1}' and a.ImportDt='{2}'
                                           ";
 
         #endregion
@@ -54,8 +54,9 @@ namespace Main.DB.Generate
         /// </summary>
         /// <param name="factory"></param>
         /// <param name="productid"></param>
+        /// <param name="macadd"></param>
         /// <returns></returns>
-        public DataTable GetRecordToDataTable(string factory,int productid)
+        public DataTable GetRecordToDataTable(string factory,int productid,string macadd)
         {
             var resultdt=new DataTable();
 
@@ -66,11 +67,11 @@ namespace Main.DB.Generate
                 //创建一个用于保存循环记录的DATATABLE
                 var tempdt = TempDt();
                 //根据条件获取AKZO配方相关记录(表头)
-                var akzodt = GetDtDtl(factory,0, productid);
+                var akzodt = GetDtDtl(factory,0, productid,macadd);
                 //根据条件获取AKZO配方相关记录(表体)
-                var akzoEntrydt = GetDtDtl(factory, 1, productid);
+                var akzoEntrydt = GetDtDtl(factory, 1, productid,macadd);
                 //根据条件获取色母对照表相关记录
-                var colorantdt = GetDtDtl(factory, 2 ,productid);
+                var colorantdt = GetDtDtl(factory, 2 ,productid,macadd);
                 //最后使用上面的DATATABLE进行运算得出最终的结果集。结果集以DT来存储
                 resultdt = GenerateColorantPercent(newdt,tempdt,akzodt,akzoEntrydt,colorantdt);
             }
@@ -179,14 +180,15 @@ namespace Main.DB.Generate
         /// <param name="factory">制造商</param>
         /// <param name="markid">0:AKZO表头 1:AKZO表体 2:色母对照表</param>
         /// <param name="pid">产品系列ID</param>
+        /// <param name="macadd"></param>
         /// <returns></returns>
-        private DataTable GetDtDtl(string factory,int markid,int pid)
+        private DataTable GetDtDtl(string factory,int markid,int pid,string macadd)
         {
             var ds = new DataSet();
 
             try
             {
-                ds = Getdtl(markid, factory,pid);
+                ds = Getdtl(markid, factory,pid,macadd);
             }
             catch (Exception ex)
             {
@@ -202,8 +204,9 @@ namespace Main.DB.Generate
         /// <param name="markid">分支判断ID</param>
         /// <param name="factory">制造商</param>
         /// <param name="pid"></param>
+        /// <param name="macAdd">用户MAC地址</param>
         /// <returns></returns>
-        private DataSet Getdtl(int markid,string factory,int pid)
+        private DataSet Getdtl(int markid,string factory,int pid,string macAdd)
         {
             var ds = new DataSet();
             var sqlscript = string.Empty;
@@ -215,15 +218,15 @@ namespace Main.DB.Generate
                 {
                     //0:表示AKZO表头信息获取
                     case 0:
-                        sqlscript = factory == "全部" ? _searchAkzoAll : string.Format(_searchAkzo, factory);
+                        sqlscript = factory == "全部" ? string.Format(_searchAkzoAll,macAdd,DateTime.Now.Date) : string.Format(_searchAkzo, factory);
                         break;
                     //1:表示AKZO表体信息获取
                     case 1:
-                        sqlscript = factory == "全部" ? _searchAkzoEntryAll : string.Format(_searchAkzoEntry, factory);
+                        sqlscript = factory == "全部" ? string.Format(_searchAkzoEntryAll,macAdd,DateTime.Now.Date) : string.Format(_searchAkzoEntry, factory);
                         break;
                     //2:表示色母对照表信息获取
                     case 2:
-                        sqlscript = string.Format(_searchColordtl,pid);
+                        sqlscript = string.Format(_searchColordtl,pid,macAdd,DateTime.Now.Date);
                         break;
                 }
 

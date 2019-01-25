@@ -27,8 +27,8 @@ namespace Main.DB.Import
                 var importExcelDt = OpenExcelToDataTable(fileAddress, tableName);
                 //将从EXCEL过来的记录集为空的行清除
                 var tempdt = RemoveEmptyRows(importExcelDt);
-                //对获取出来的DT中的"AKZO色母量"进行计算并填充(注:利用同一个制造商及AKZO色号内的累积量,计算出对应的色母量)
-                resultdt = GenerateColorParcent(tempdt);
+                //对获取出来的DT中的"AKZO色母量"进行计算并填充(注:1)利用同一个制造商及AKZO色号内的累积量,计算出对应的色母量 2)只适用于AKZO配方,色母对照表不适合)
+                resultdt = tableName!="" ? GenerateColorParcent(tempdt) : tempdt;
             }
             catch (Exception ex)
             {
@@ -235,8 +235,9 @@ namespace Main.DB.Import
         /// </summary>
         /// <param name="tableName"></param>
         /// <param name="dt"></param>
+        /// <param name="macAddress">记录用户的MAC地址</param>
         /// <returns></returns>
-        public string ImportExcelToDb(string tableName, DataTable dt)
+        public string ImportExcelToDb(string tableName, DataTable dt,string macAddress)
         {
             var result = "0";
 
@@ -261,20 +262,23 @@ namespace Main.DB.Import
                 {
                     //先将传过来的DT信息拆分并放到一个表头临时表并插入至数据表(插入至AkzoFormula表)
                     var fdt = CreateFormualDt();
-                    var akzoDt = ChangeDt(dt, fdt, 0);
+                    var akzoDt = ChangeDt(dt, fdt, 0,macAddress);
                     //将获取过来的DT放到数据AkzoFormula表中判断,若相同,即不用再进行插入
-                    var resultdt=Checkdt(akzoDt);
+                    var resultdt=Checkdt(akzoDt,macAddress);
                     if(resultdt.Rows.Count>0) Importdt("AkzoFormula", resultdt);
 
                     //再将传过来的DT信息拆分并放到一个表体临时表并插入至数据表(插入至AkzoFormulaEntry表)
                     var entryDt = CreateFormualEntryDt();
-                    var akzoEntrydt = ChangeDt(dt, entryDt, 1);
+                    var akzoEntrydt = ChangeDt(dt, entryDt, 1,macAddress);
                     Importdt("AkzoFormulaEntry", akzoEntrydt);
                 }
                 //否则tablename为"ColorCodeContrast",表示插入色母对照表,按常规使用SqlBulkCopy方法进行插入数据
                 else
                 {
-                    Importdt(tableName,dt);
+                    //将"色母对照表"也增加MAC地址以及创建日期
+                    var contrastDt = CreateColorCodeContrastDt();
+                    var yatuContrastDt = GetContrastDt(dt,contrastDt,macAddress);
+                    Importdt(tableName, yatuContrastDt);
                 }
             }
             catch (Exception ex)
@@ -297,7 +301,7 @@ namespace Main.DB.Import
             //注:1)要插入的DataTable内的字段数据类型必须要与数据库内的一致;并且要按数据表内的字段顺序 2)SqlBulkCopy类只提供将数据写入到数据库内
             using (var sqlBulkCopy = new SqlBulkCopy(sqlcon))
             {
-                sqlBulkCopy.BatchSize = 500;                    //表示以500行 为一个批次进行插入
+                sqlBulkCopy.BatchSize = 1000;                    //表示以1000行 为一个批次进行插入
                 sqlBulkCopy.DestinationTableName = tableName;  //数据库中对应的表名
                 sqlBulkCopy.NotifyAfter = dt.Rows.Count;      //赋值DataTable的行数
                 sqlBulkCopy.WriteToServer(dt);               //数据导入数据库
@@ -315,7 +319,7 @@ namespace Main.DB.Import
             var dt = new DataTable();
             try
             {
-                for (var i = 0; i < 2; i++)
+                for (var i = 0; i < 4; i++)
                 {
                     var dc = new DataColumn();
 
@@ -328,6 +332,14 @@ namespace Main.DB.Import
                         case 1:
                             dc.ColumnName = "ColorCode"; //Akzo色号
                             dc.DataType = Type.GetType("System.String");
+                            break;
+                        case 2:
+                            dc.ColumnName = "MacAdd"; //MAC地址
+                            dc.DataType = Type.GetType("System.String");
+                            break;
+                        case 3:
+                            dc.ColumnName = "ImportDt"; //创建日期
+                            dc.DataType = Type.GetType("System.DateTime");
                             break;
                     }
                     dt.Columns.Add(dc);
@@ -349,7 +361,7 @@ namespace Main.DB.Import
             var dt = new DataTable();
             try
             {
-                for (var i = 0; i < 4; i++)
+                for (var i = 0; i < 6; i++)
                 {
                     var dc = new DataColumn();
 
@@ -371,6 +383,64 @@ namespace Main.DB.Import
                             dc.ColumnName = "ColorantParent";  //AKZO色母量
                             dc.DataType = Type.GetType("System.Decimal");
                             break;
+                        case 4:
+                            dc.ColumnName = "MacAdd"; //MAC地址
+                            dc.DataType = Type.GetType("System.String");
+                            break;
+                        case 5:
+                            dc.ColumnName = "ImportDt"; //创建日期
+                            dc.DataType = Type.GetType("System.DateTime");
+                            break;
+                    }
+                    dt.Columns.Add(dc);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return dt;
+        }
+
+        /// <summary>
+        /// 创建色母对照表信息(为最后插入时作准备)
+        /// </summary>
+        /// <returns></returns>
+        private DataTable CreateColorCodeContrastDt()
+        {
+            var dt = new DataTable();
+            try
+            {
+                for (var i = 0; i < 6; i++)
+                {
+                    var dc = new DataColumn();
+
+                    switch (i)
+                    {
+                        case 0:
+                            dc.ColumnName = "AkzoColorant";        //Akzo色母
+                            dc.DataType = Type.GetType("System.String");
+                            break;
+                        case 1:
+                            dc.ColumnName = "Colorant";          //雅图色母
+                            dc.DataType = Type.GetType("System.String");
+                            break;
+                        case 2:
+                            dc.ColumnName = "Num";              //浓度转换系数
+                            dc.DataType = Type.GetType("System.Decimal");
+                            break;
+                        case 3:
+                            dc.ColumnName = "TypeId";           //产品系列类型
+                            dc.DataType = Type.GetType("System.Decimal");
+                            break;
+                        case 4:
+                            dc.ColumnName = "MacAdd";           //MAC地址
+                            dc.DataType = Type.GetType("System.String");
+                            break;
+                        case 5:
+                            dc.ColumnName = "ImportDt";         //创建日期
+                            dc.DataType = Type.GetType("System.DateTime");
+                            break;
                     }
                     dt.Columns.Add(dc);
                 }
@@ -388,13 +458,11 @@ namespace Main.DB.Import
         /// <param name="dt">从DataGrild内获取的DATATABLE</param>
         /// <param name="newdt">返回的新DATATABLE</param>
         /// <param name="markId">0:表头 1:表体</param>
+        /// <param name="macAdd">记录用户的MAC地址</param>
         /// <returns></returns>
-        private DataTable ChangeDt(DataTable dt,DataTable newdt,int markId)
+        private DataTable ChangeDt(DataTable dt,DataTable newdt,int markId,string macAdd)
         {
-            //中转值
-            //var factory = string.Empty;
-            //var akzoCode = string.Empty;
-            var Marid = 0;
+            var marid = 0;
 
             try
             {
@@ -406,30 +474,25 @@ namespace Main.DB.Import
                         {
                             var newrow = newdt.NewRow();
 
-                            //if (factory == "" && akzoCode == "")
-                            if(Marid==0)
+                            if(marid==0)
                             {
                                 newrow["Factory"] = rows["制造商"];
                                 newrow["ColorCode"] = rows["Akzo色号"];
-
-                                Marid = 1;
-
-                                //factory = Convert.ToString(rows["制造商"]);
-                                //akzoCode = Convert.ToString(rows["Akzo色号"]);
+                                newrow["MacAdd"] = macAdd;
+                                newrow["ImportDt"] = DateTime.Now.Date;
+                                marid = 1;
                             }
                             else
                             {
                                 //判断若循环获取的制造商,AKZO色号在NEWDT内存在的话就不用插入
-                                if (/*factory == Convert.ToString(rows["制造商"]) && akzoCode == Convert.ToString(rows["Akzo色号"])
-                                    || */Searchrepetition(Convert.ToString(rows["制造商"]), Convert.ToString(rows["Akzo色号"]),newdt)>0)
+                                if (Searchrepetition(Convert.ToString(rows["制造商"]), Convert.ToString(rows["Akzo色号"]),newdt)>0)
                                 {
                                     continue;
                                 }
                                 newrow["Factory"] = rows["制造商"];
                                 newrow["ColorCode"] = rows["Akzo色号"];
-
-                                //factory = Convert.ToString(rows["制造商"]);
-                                //akzoCode = Convert.ToString(rows["Akzo色号"]);
+                                newrow["MacAdd"] = macAdd;
+                                newrow["ImportDt"] = DateTime.Now.Date;
                             }
                             newdt.Rows.Add(newrow);
                         }
@@ -443,6 +506,8 @@ namespace Main.DB.Import
                             newrow["AkzoColorant"] = rows["Akzo色母"];
                             newrow["Cumulant"] = rows["累积量"];
                             newrow["ColorantParent"] = rows["Akzo色母量"];
+                            newrow["MacAdd"] = macAdd;
+                            newrow["ImportDt"] = DateTime.Now.Date;
                             newdt.Rows.Add(newrow);
                         }
                         break;
@@ -456,11 +521,11 @@ namespace Main.DB.Import
         }
 
         /// <summary>
-        /// 判断插入的DT是否有重复(注:当插入数据至AkzoFormula时使用)
+        /// 判断插入的DT是否有重复(注:当插入数据至AkzoFormula表时使用)
         /// </summary>
         /// <param name="factory">获取过来的制造商</param>
         /// <param name="akzoCode">获取过来的Akzo号</param>
-        /// <param name="dt"></param>
+        /// <param name="dt">临时DT</param>
         /// <returns></returns>
         private int Searchrepetition(string factory,string akzoCode,DataTable dt)
         {
@@ -481,7 +546,7 @@ namespace Main.DB.Import
         /// <returns></returns>
         private DataTable GenerateColorParcent(DataTable tempdt)
         {
-            string markid=string.Empty;
+            var markid=string.Empty;
             //记录累积量
             decimal cumulantTemp=0; 
 
@@ -490,7 +555,7 @@ namespace Main.DB.Import
                 //创建表头临时表
                 var fdt = CreateFormualDt();
                 //根据EXCEL的DT获取其表头信息,以DT为返回结果
-                var akzoDt = ChangeDt(tempdt, fdt, 0);
+                var akzoDt = ChangeDt(tempdt, fdt, 0,null);
 
                 foreach (DataRow akzorows in akzoDt.Rows)
                 {
@@ -513,8 +578,9 @@ namespace Main.DB.Import
                         }
                         row.EndEdit();
                     }
-                    //每次循环完将markid标记初始化
+                    //每次循环完将markid标记及累积量中间值初始化
                     markid = "";
+                    cumulantTemp = 0;
                 }
             }
             catch (Exception ex)
@@ -525,17 +591,18 @@ namespace Main.DB.Import
         }
 
         /// <summary>
-        /// 检查准备插入的表头DT内的行记录是否已在AkzoFormula表内存在,若存在,即不
+        /// 检查准备插入的表头DT内的行记录是否已在AkzoFormula表内存在,若存在,即删除
         /// </summary>
         /// <returns></returns>
-        private DataTable Checkdt(DataTable dt)
+        private DataTable Checkdt(DataTable dt,string macadd)
         {
             var removeList = new List<DataRow>();
 
             try
             {
                 var searchData = new SearchData();
-                var searchdt = searchData.SearchFormulaList();
+                //根据指定条件获取AkzoFormula表记录
+                var searchdt = searchData.SearchFormulaList(macadd);
 
                 //当查询AkzoFormula表有记录时才执行
                 if(searchdt.Rows.Count>0)
@@ -561,5 +628,34 @@ namespace Main.DB.Import
             return dt;
         }
 
+        /// <summary>
+        /// 获取并返回新的色母对照表DT
+        /// </summary>
+        /// <param name="dt">从DataGrild内获取的DATATABLE</param>
+        /// <param name="newdt">返回新的DT</param>
+        /// <param name="macAdd">记录用户的MAC地址</param>
+        /// <returns></returns>
+        private DataTable GetContrastDt(DataTable dt, DataTable newdt,string macAdd)
+        {
+            try
+            {
+                foreach (DataRow rows in dt.Rows)
+                {
+                    var newrow = newdt.NewRow();
+                    newrow["AkzoColorant"] = rows["Akzo色母"];
+                    newrow["Colorant"] = rows["雅图色母"];
+                    newrow["Num"] = rows["浓度转换系数"];
+                    newrow["TypeId"] = rows["产品系列类型"];
+                    newrow["MacAdd"] = macAdd;
+                    newrow["ImportDt"] = DateTime.Now.Date;
+                    newdt.Rows.Add(newrow);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
+            return newdt;
+        }
     }
 }

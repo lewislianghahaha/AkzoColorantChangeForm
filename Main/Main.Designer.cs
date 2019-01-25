@@ -36,6 +36,7 @@
             this.tmExport = new System.Windows.Forms.ToolStripMenuItem();
             this.tm3 = new System.Windows.Forms.ToolStripMenuItem();
             this.tmSearchColorant = new System.Windows.Forms.ToolStripMenuItem();
+            this.tmSearchFormula = new System.Windows.Forms.ToolStripMenuItem();
             this.tmClose = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
             this.btnGenerate = new System.Windows.Forms.Button();
@@ -47,7 +48,7 @@
             this.lblCount = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.gvdtl = new System.Windows.Forms.DataGridView();
-            this.tmSearchFormula = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.MainMenu.SuspendLayout();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -106,6 +107,7 @@
             // 
             this.tm3.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.tmSearchColorant,
+            this.toolStripSeparator2,
             this.tmSearchFormula});
             this.tm3.Name = "tm3";
             this.tm3.Size = new System.Drawing.Size(44, 21);
@@ -115,7 +117,13 @@
             // 
             this.tmSearchColorant.Name = "tmSearchColorant";
             this.tmSearchColorant.Size = new System.Drawing.Size(152, 22);
-            this.tmSearchColorant.Text = "Akzo对照表";
+            this.tmSearchColorant.Text = "色母对照表";
+            // 
+            // tmSearchFormula
+            // 
+            this.tmSearchFormula.Name = "tmSearchFormula";
+            this.tmSearchFormula.Size = new System.Drawing.Size(152, 22);
+            this.tmSearchFormula.Text = "配方记录表";
             // 
             // tmClose
             // 
@@ -138,7 +146,7 @@
             // 
             // btnGenerate
             // 
-            this.btnGenerate.Location = new System.Drawing.Point(486, 10);
+            this.btnGenerate.Location = new System.Drawing.Point(272, 10);
             this.btnGenerate.Name = "btnGenerate";
             this.btnGenerate.Size = new System.Drawing.Size(75, 23);
             this.btnGenerate.TabIndex = 4;
@@ -149,7 +157,7 @@
             // 
             this.comProductList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comProductList.FormattingEnabled = true;
-            this.comProductList.Location = new System.Drawing.Point(290, 11);
+            this.comProductList.Location = new System.Drawing.Point(76, 11);
             this.comProductList.Name = "comProductList";
             this.comProductList.Size = new System.Drawing.Size(121, 20);
             this.comProductList.TabIndex = 3;
@@ -157,7 +165,7 @@
             // label2
             // 
             this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(230, 16);
+            this.label2.Location = new System.Drawing.Point(16, 16);
             this.label2.Name = "label2";
             this.label2.Size = new System.Drawing.Size(53, 12);
             this.label2.TabIndex = 2;
@@ -167,19 +175,21 @@
             // 
             this.comFactory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comFactory.FormattingEnabled = true;
-            this.comFactory.Location = new System.Drawing.Point(76, 12);
+            this.comFactory.Location = new System.Drawing.Point(839, 12);
             this.comFactory.Name = "comFactory";
             this.comFactory.Size = new System.Drawing.Size(121, 20);
             this.comFactory.TabIndex = 1;
+            this.comFactory.Visible = false;
             // 
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(30, 17);
+            this.label1.Location = new System.Drawing.Point(793, 17);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(41, 12);
             this.label1.TabIndex = 0;
             this.label1.Text = "制造商";
+            this.label1.Visible = false;
             // 
             // panel2
             // 
@@ -221,11 +231,10 @@
             this.gvdtl.Size = new System.Drawing.Size(972, 468);
             this.gvdtl.TabIndex = 0;
             // 
-            // tmSearchFormula
+            // toolStripSeparator2
             // 
-            this.tmSearchFormula.Name = "tmSearchFormula";
-            this.tmSearchFormula.Size = new System.Drawing.Size(152, 22);
-            this.tmSearchFormula.Text = "Akzo配方表";
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(149, 6);
             // 
             // Main
             // 
@@ -241,7 +250,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MainMenuStrip = this.MainMenu;
             this.Name = "Main";
-            this.Text = "Akzo色母转换查询功能";
+            this.Text = "色母转换查询功能";
             this.MainMenu.ResumeLayout(false);
             this.MainMenu.PerformLayout();
             this.panel1.ResumeLayout(false);
@@ -277,6 +286,7 @@
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.DataGridView gvdtl;
         private System.Windows.Forms.ToolStripMenuItem tmSearchFormula;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
     }
 }
 

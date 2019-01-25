@@ -28,6 +28,8 @@ namespace Main.DB
         private string _importResult = "0"; //返回是否成功的提示信息(注:导入或导出记录时使用)
         private string _factory;
         private int _pid;
+        private string _MacAdd;
+        private DateTime _importdt;
 
         /// <summary>
         /// 中转ID
@@ -58,6 +60,16 @@ namespace Main.DB
         /// </summary>
         public int pid {set { _pid = value; }}
 
+        /// <summary>
+        /// 接收MAC地址
+        /// </summary>
+        public string MacAdd {set { _MacAdd = value; }}
+
+        /// <summary>
+        /// 接收导入的日期("查询"时使用)
+        /// </summary>
+        public DateTime Dt {set { _importdt = value; }}
+
 
         /// <summary>
         ///返回DataTable至主窗体
@@ -85,7 +97,7 @@ namespace Main.DB
                     break;
                 //导入数据库功能
                 case 2:
-                    ImportExcelToDb(_tablename,_importTable);
+                    ImportExcelToDb(_tablename,_importTable,_MacAdd);
                     break;
                 //下拉列表数据获取(查询)“制造商”
                 case 3:
@@ -93,11 +105,11 @@ namespace Main.DB
                     break;
                 //查询色母对照表(色母对照表时使用)
                 case 4:
-                    SearchProddt(_pid);
+                    SearchProddt(_pid,_MacAdd,_importdt);
                     break;
                 //运算功能
                 case 5:
-                    GenerateRecord(_factory,_pid);
+                    GenerateRecord(_factory,_pid,_MacAdd);
                     break;
                 //导出功能
                 case 6:
@@ -105,7 +117,7 @@ namespace Main.DB
                     break;
                 //查询AKZO配方(查询AKZO配方表使用)
                 case 7:
-                    SearchFormula(_factory);
+                    SearchFormula(_factory,_MacAdd,_importdt);
                     break;
             }
         }
@@ -125,9 +137,10 @@ namespace Main.DB
         /// </summary>
         /// <param name="tableName"></param>
         /// <param name="dt"></param>
-        private void ImportExcelToDb(string tableName,DataTable dt)
+        /// <param name="macadd"></param>
+        private void ImportExcelToDb(string tableName,DataTable dt,string macadd)
         {
-            _importResult = import.ImportExcelToDb(tableName,dt);
+            _importResult = import.ImportExcelToDb(tableName,dt,macadd);
         }
 
         /// <summary>
@@ -143,18 +156,20 @@ namespace Main.DB
         /// </summary>
         /// <param name="factory"></param>
         /// <param name="pid"></param>
-        private void GenerateRecord(string factory,int pid)
+        private void GenerateRecord(string factory,int pid,string macadd)
         {
-            _resultTable = generate.GetRecordToDataTable(factory,pid);
+            _resultTable = generate.GetRecordToDataTable(factory,pid,macadd);
         }
 
         /// <summary>
         /// 查询色母对照表
         /// </summary>
         /// <param name="pid"></param>
-        private void SearchProddt(int pid)
+        /// <param name="macadd"></param>
+        /// <param name="dtTime"></param>
+        private void SearchProddt(int pid,string macadd,DateTime dtTime)
         {
-            _resultTable = search.SearchProductList(pid);
+            _resultTable = search.SearchProductList(pid,macadd,dtTime);
         }
 
         /// <summary>
@@ -169,10 +184,11 @@ namespace Main.DB
         /// 查询AKZO配方记录明细表
         /// </summary>
         /// <param name="factory"></param>
-        private void SearchFormula(string factory)
+        /// <param name="macadd"></param>
+        /// <param name="dtTime"></param>
+        private void SearchFormula(string factory,string macadd,DateTime dtTime)
         {
-            _resultTable = search.SearchdtlList(factory);
+            _resultTable = search.SearchdtlList(factory,macadd,dtTime);
         }
-
     }
 }

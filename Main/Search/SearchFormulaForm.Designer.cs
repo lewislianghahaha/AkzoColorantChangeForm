@@ -38,6 +38,8 @@
             this.lblcount = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.gvdtl = new System.Windows.Forms.DataGridView();
+            this.dtp = new System.Windows.Forms.DateTimePicker();
+            this.label2 = new System.Windows.Forms.Label();
             this.MainMenu.SuspendLayout();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -64,6 +66,8 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.label2);
+            this.panel1.Controls.Add(this.dtp);
             this.panel1.Controls.Add(this.btnSearch);
             this.panel1.Controls.Add(this.comfactory);
             this.panel1.Controls.Add(this.label1);
@@ -75,7 +79,7 @@
             // 
             // btnSearch
             // 
-            this.btnSearch.Location = new System.Drawing.Point(270, 5);
+            this.btnSearch.Location = new System.Drawing.Point(427, 4);
             this.btnSearch.Name = "btnSearch";
             this.btnSearch.Size = new System.Drawing.Size(75, 23);
             this.btnSearch.TabIndex = 2;
@@ -86,7 +90,7 @@
             // 
             this.comfactory.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comfactory.FormattingEnabled = true;
-            this.comfactory.Location = new System.Drawing.Point(72, 6);
+            this.comfactory.Location = new System.Drawing.Point(291, 5);
             this.comfactory.Name = "comfactory";
             this.comfactory.Size = new System.Drawing.Size(121, 20);
             this.comfactory.TabIndex = 1;
@@ -94,7 +98,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(24, 9);
+            this.label1.Location = new System.Drawing.Point(243, 10);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(41, 12);
             this.label1.TabIndex = 0;
@@ -140,6 +144,22 @@
             this.gvdtl.Size = new System.Drawing.Size(858, 422);
             this.gvdtl.TabIndex = 0;
             // 
+            // dtp
+            // 
+            this.dtp.Location = new System.Drawing.Point(75, 6);
+            this.dtp.Name = "dtp";
+            this.dtp.Size = new System.Drawing.Size(148, 21);
+            this.dtp.TabIndex = 3;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(16, 10);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(53, 12);
+            this.label2.TabIndex = 4;
+            this.label2.Text = "导入日期";
+            // 
             // SearchFormulaForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -153,7 +173,7 @@
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedSingle;
             this.MainMenuStrip = this.MainMenu;
             this.Name = "SearchFormulaForm";
-            this.Text = "查询-Akzo配方表";
+            this.Text = "查询-配方记录表";
             this.MainMenu.ResumeLayout(false);
             this.MainMenu.PerformLayout();
             this.panel1.ResumeLayout(false);
@@ -179,5 +199,7 @@
         private System.Windows.Forms.Label lblcount;
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.DataGridView gvdtl;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.DateTimePicker dtp;
     }
 }

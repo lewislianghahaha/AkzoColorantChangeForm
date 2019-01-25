@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Management;
 using System.Threading;
 using Main.DB;
 using System.Windows.Forms;
@@ -53,23 +54,32 @@ namespace Main.Search
         /// <param name="e"></param>
         private void BtnSearch_Click(object sender, EventArgs e)
         {
-            //获取所选择的“制造商”下拉列表值
-            var dvfactorylist = (DataRowView)comfactory.Items[comfactory.SelectedIndex];
-            var factory = Convert.ToString(dvfactorylist["Factory"]);
+            try
+            {
+                //获取所选择的“制造商”下拉列表值
+                var dvfactorylist = (DataRowView)comfactory.Items[comfactory.SelectedIndex];
+                var factory = Convert.ToString(dvfactorylist["Factory"]);
 
-            //将所需的值赋到Task类内
-            task.TaskId = 7;
-            task.Factory = factory;
+                //将所需的值赋到Task类内
+                task.TaskId = 7;
+                task.Factory = factory;
+                task.MacAdd = GetMacAddress(); //获取MAC地址
+                task.Dt = dtp.Value.Date;  //获取指定的导入日期
 
-            //使用子线程工作(作用:通过调用子线程进行控制Load窗体的关闭情况)
-            new Thread(Start).Start();
-            load.StartPosition = FormStartPosition.CenterScreen;
-            load.ShowDialog();
+                //使用子线程工作(作用:通过调用子线程进行控制Load窗体的关闭情况)
+                new Thread(Start).Start();
+                load.StartPosition = FormStartPosition.CenterScreen;
+                load.ShowDialog();
 
-            if (task.RestulTable.Rows.Count == 0) throw new Exception("查询不成功,请联系管理人员.");
-            //MessageBox.Show("查询成功", "提示", MessageBoxButtons.OK, MessageBoxIcon.Information);
-            gvdtl.DataSource = task.RestulTable;
-            lblcount.Text = "查询的记录数为:" + gvdtl.Rows.Count + "行";
+                if (task.RestulTable.Rows.Count == 0) throw new Exception("查询不成功,请联系管理人员.");
+                if (task.RestulTable.Rows.Count > 0)
+                    gvdtl.DataSource = task.RestulTable;
+                lblcount.Text = "查询的记录数为:" + gvdtl.Rows.Count + "行";
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message.Contains("InvalidArgument") ? "请选择制造商下拉列表" : ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         /// <summary>
@@ -90,6 +100,34 @@ namespace Main.Search
             this.Invoke((ThreadStart)(() => {
                 load.Close();
             }));
+        }
+
+        /// <summary>
+        /// 获取MAC地址
+        /// </summary>
+        /// <returns></returns>
+        private string GetMacAddress()
+        {
+            try
+            {
+                string strMac = string.Empty;
+                var mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
+                var moc = mc.GetInstances();
+                foreach (var mo in moc)
+                {
+                    if ((bool)mo["IPEnabled"] == true)
+                    {
+                        strMac = mo["MacAddress"].ToString();
+                    }
+                }
+                moc = null;
+                mc = null;
+                return strMac;
+            }
+            catch
+            {
+                return "unknown";
+            }
         }
     }
 }

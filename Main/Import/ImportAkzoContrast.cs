@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Management;
 using System.Threading;
 using System.Windows.Forms;
 using Main.DB;
@@ -71,7 +72,8 @@ namespace Main.Import
                 //将所需的值赋到Task类内
                 task.TaskId = 2;
                 task.Tablename = "ColorCodeContrast";
-                task.ImporTable = (DataTable)gvdtl.DataSource;
+                task.ImporTable = (DataTable) gvdtl.DataSource;
+                task.MacAdd = GetMacAddress();  //获取用户MAC地址
 
                 //使用子线程工作(作用:通过调用子线程进行控制Load窗体的关闭情况)
                 new Thread(Start).Start();
@@ -133,6 +135,34 @@ namespace Main.Import
             catch (Exception ex)
             {
                 MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// 获取MAC地址
+        /// </summary>
+        /// <returns></returns>
+        private string GetMacAddress()
+        {
+            try
+            {
+                string strMac = string.Empty;
+                var mc = new ManagementClass("Win32_NetworkAdapterConfiguration");
+                var moc = mc.GetInstances();
+                foreach (var mo in moc)
+                {
+                    if ((bool)mo["IPEnabled"] == true)
+                    {
+                        strMac = mo["MacAddress"].ToString();
+                    }
+                }
+                moc = null;
+                mc = null;
+                return strMac;
+            }
+            catch
+            {
+                return "unknown";
             }
         }
     }

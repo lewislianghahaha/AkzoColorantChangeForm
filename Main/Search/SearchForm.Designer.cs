@@ -38,6 +38,8 @@
             this.lblcount = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.gvdtl = new System.Windows.Forms.DataGridView();
+            this.dtp = new System.Windows.Forms.DateTimePicker();
+            this.label2 = new System.Windows.Forms.Label();
             this.MainMenu.SuspendLayout();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -64,6 +66,8 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.label2);
+            this.panel1.Controls.Add(this.dtp);
             this.panel1.Controls.Add(this.btnSearch);
             this.panel1.Controls.Add(this.comList);
             this.panel1.Controls.Add(this.label1);
@@ -75,7 +79,7 @@
             // 
             // btnSearch
             // 
-            this.btnSearch.Location = new System.Drawing.Point(253, 6);
+            this.btnSearch.Location = new System.Drawing.Point(451, 5);
             this.btnSearch.Name = "btnSearch";
             this.btnSearch.Size = new System.Drawing.Size(75, 23);
             this.btnSearch.TabIndex = 2;
@@ -86,7 +90,7 @@
             // 
             this.comList.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
             this.comList.FormattingEnabled = true;
-            this.comList.Location = new System.Drawing.Point(88, 7);
+            this.comList.Location = new System.Drawing.Point(309, 7);
             this.comList.Name = "comList";
             this.comList.Size = new System.Drawing.Size(121, 20);
             this.comList.TabIndex = 1;
@@ -94,7 +98,7 @@
             // label1
             // 
             this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(29, 11);
+            this.label1.Location = new System.Drawing.Point(250, 11);
             this.label1.Name = "label1";
             this.label1.Size = new System.Drawing.Size(53, 12);
             this.label1.TabIndex = 0;
@@ -140,6 +144,22 @@
             this.gvdtl.Size = new System.Drawing.Size(858, 420);
             this.gvdtl.TabIndex = 0;
             // 
+            // dtp
+            // 
+            this.dtp.Location = new System.Drawing.Point(76, 7);
+            this.dtp.Name = "dtp";
+            this.dtp.Size = new System.Drawing.Size(148, 21);
+            this.dtp.TabIndex = 3;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(17, 11);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(53, 12);
+            this.label2.TabIndex = 4;
+            this.label2.Text = "导入日期";
+            // 
             // SearchForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -179,5 +199,7 @@
         private System.Windows.Forms.Panel panel3;
         private System.Windows.Forms.DataGridView gvdtl;
         private System.Windows.Forms.ToolStripMenuItem tmClose;
+        private System.Windows.Forms.DateTimePicker dtp;
+        private System.Windows.Forms.Label label2;
     }
 }
