@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using Main.DB.SearchUpdate;
+using NPOI.HSSF.Util;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 
@@ -88,6 +89,10 @@ namespace Main.DB.Import
                                 dataColumn.ColumnName = "Akzo色母量";
                                 dataColumn.DataType = Type.GetType("System.Decimal"); 
                                 break;
+                            //case 5:
+                            //    dataColumn.ColumnName = "层数";
+                            //    dataColumn.DataType = Type.GetType("System.String");
+                            //    break;
                         }
                         dt.Columns.Add(dataColumn);
                     }
@@ -264,7 +269,7 @@ namespace Main.DB.Import
                     var fdt = CreateFormualDt();
                     var akzoDt = ChangeDt(dt, fdt, 0,macAddress);
                     //将获取过来的DT放到数据AkzoFormula表中判断,若相同,即不用再进行插入
-                    var resultdt=Checkdt(akzoDt,macAddress);
+                    var resultdt = Checkdt(akzoDt,macAddress);
                     if(resultdt.Rows.Count>0) Importdt("AkzoFormula", resultdt);
 
                     //再将传过来的DT信息拆分并放到一个表体临时表并插入至数据表(插入至AkzoFormulaEntry表)
@@ -546,25 +551,25 @@ namespace Main.DB.Import
         /// <returns></returns>
         private DataTable GenerateColorParcent(DataTable tempdt)
         {
-            var markid=string.Empty;
-            //记录累积量
+            //记录累积量中间值
             decimal cumulantTemp=0; 
+            //标记是否第一行
+            var markid = string.Empty;
 
             try
             {
                 //创建表头临时表
                 var fdt = CreateFormualDt();
-                //根据EXCEL的DT获取其表头信息,以DT为返回结果
+                //根据EXCEL的DT获取其表头信息,以DT类型为返回结果
                 var akzoDt = ChangeDt(tempdt, fdt, 0,null);
 
                 foreach (DataRow akzorows in akzoDt.Rows)
                 {
                     var rows = tempdt.Select("Akzo色号 = '" + akzorows[1] + "' and 制造商 = '" + akzorows[0] + "'");
-
-                    foreach (DataRow row in rows)
-                    {
+                    //运算AKZO色母量;注:除第一行的AKZO色母量就是累积量外;其它行的AKZO色母量就是该行的累积量与上一行的累积量进行相减得出
+                    foreach (var row in rows)
+                    { 
                         row.BeginEdit();
-                        //运算AKZO色母量;注:除第一行的AKZO色母量就是累积量外。其它行的AKZO色母量就是该行的累积量与上一行的累积量进行相减得出
                         if (markid == "")
                         {
                             row[4] = Convert.ToDecimal(row[3]);
@@ -573,8 +578,18 @@ namespace Main.DB.Import
                         }
                         else
                         {
-                            row[4] = Convert.ToDecimal(row[3])-cumulantTemp;
-                            cumulantTemp = Convert.ToDecimal(row[3]);
+                            //若当前的行累积量>=1000时,表示该行为此行为记录集内同一层的最后一行,要将markid清空,若在此行以下还有新记录出现的话,就需要重新执行
+                            if (Convert.ToDecimal(row[3])>=1000)
+                            {
+                                row[4] = Convert.ToDecimal(row[3]) - cumulantTemp;
+                                markid = "";
+                            }
+                            //反之,若不是最后一行的话,就按照原来的方式执行
+                            else
+                            {
+                                row[4] = Convert.ToDecimal(row[3]) - cumulantTemp;
+                                cumulantTemp = Convert.ToDecimal(row[3]);
+                            }
                         }
                         row.EndEdit();
                     }
