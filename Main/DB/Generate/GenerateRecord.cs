@@ -145,6 +145,7 @@ namespace Main.DB.Generate
 
                                 newrow["YatuColorant"] = colorantrow[j][1];           //雅图色母
                                 newrow["Num"] = colorantrow[j][2];                   //浓度转换系数
+
                                 //计算色母量中间值=AKZO色母量*浓度转换系数
                                 newrow["tempNum"] = decimal.Round(Convert.ToDecimal(row[i][3]) * Convert.ToDecimal(colorantrow[j][2]), 3);
                                 //将新行插入至临时表内
@@ -154,7 +155,7 @@ namespace Main.DB.Generate
                             }
                         }
                         //循环tempdt,当检查到其中的“累积量”出现>=1000时,就将该记录集截取,并放到以下的方法进行填充至newdt内,注:每执行完下面的方法后,tempdt及total需清空
-                        if (cumulant>=1000)
+                        if (cumulant >= 1000)
                         {
                             //循环临时表 作用:1)计算雅图最终色母量 2)将结果集赋给Newdt内 (注:最终色母量=中间值*100/合计数)
                             foreach (DataRow temprows in tempdt.Rows)
