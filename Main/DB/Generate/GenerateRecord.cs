@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Data;
 using System.Data.SqlClient;
-using NPOI.SS.Formula.Functions;
 
 namespace Main.DB.Generate
 {
@@ -96,12 +95,10 @@ namespace Main.DB.Generate
         /// <returns></returns>
         private DataTable GenerateColorantPercent(DataTable newdt,DataTable tempdt,DataTable akzodt,DataTable akzoEntrydt,DataTable colorantdt)
         {
-            //中间值
-            decimal tempNum = 0;
             //合计数
             decimal total = 0;
-            //转换系数
-            decimal ChangeNum = 0;
+            //记录累积量临时值
+            decimal cumulant = 0;
 
             try
             {
@@ -109,59 +106,75 @@ namespace Main.DB.Generate
                 foreach (DataRow rows in akzodt.Rows)
                 {
                     //根据AKZO表头的"AKZO色号"作为条件，在ENTRY表内查询相关记录集
-
                     var row = akzoEntrydt.Select("ColorCode='" + rows[1] + "'");
                     //循环读取row数组(注:在此过程中要计算出中间值以及总计)
                     for (var i = 0; i < row.Length; i++)
                     {
-                        var newrow = tempdt.NewRow();
-                        newrow["FactoryCode"] = rows["Factory"];      //制造商
-                        newrow["ColorCode"] = rows["ColorCode"];     //AKZO色号
-                        newrow["AkzoColorant"] = row[i][1];         //AKZO色母
-                        newrow["Cumulant"] = row[i][2];            //AKZO累积量
-                        newrow["AkzoColorantParent"] = row[i][3]; //AKZO色母量
-                        //以AKZO色母号为条件,查询"色母对照表"的相关记录
+                        //记录累积量
+                        cumulant = Convert.ToDecimal(row[i][2]);
+                        //以AKZO色母号为条件,查询"色母对照表"的相关记录(注:当出现一对多的情况。就要循环赋值)
                         var colorantrow = colorantdt.Select("AkzoColorant='" + row[i][1] + "'");
+
                         //当查询不到结果时,转换系数为0，而雅图色母为空显示
                         if (colorantrow.Length < 1)
                         {
+                            var newrow = tempdt.NewRow();
+                            newrow["FactoryCode"] = rows["Factory"];          //制造商
+                            newrow["ColorCode"] = rows["ColorCode"];         //AKZO色号
+                            newrow["AkzoColorant"] = row[i][1];             //AKZO色母
+                            newrow["Cumulant"] = row[i][2];                //AKZO累积量
+                            newrow["AkzoColorantParent"] = row[i][3];     //AKZO色母量
+
                             newrow["YatuColorant"] = "";                 //雅图色母
                             newrow["Num"] = 0;                          //浓度转换系数
-                            ChangeNum = 0;                             //用变量记录转换系数
+                            newrow["tempNum"] = 0;                     //计算色母量中间值=AKZO色母量*浓度转换系数
+                            //将新行插入至临时表内
+                            tempdt.Rows.Add(newrow);
                         }
+                        //当AKZO色母对应多个雅图色母时,就要循环插入(如:Akzo色母 43 分别对应雅图色母PC-1304以及PC-1307)
                         else
                         {
-                            newrow["YatuColorant"] = colorantrow[0][1];           //雅图色母
-                            newrow["Num"] = colorantrow[0][2];                   //浓度转换系数
-                            ChangeNum = Convert.ToDecimal(colorantrow[0][2]);   //用变量记录转换系数
-                        }
-                        //计算色母量中间值=AKZO色母量*浓度转换系数
-                        newrow["tempNum"] = decimal.Round(Convert.ToDecimal(row[i][3]) * ChangeNum, 3);          
+                            for (var j = 0; j < colorantrow.Length; j++)
+                            {
+                                var newrow = tempdt.NewRow();
+                                newrow["FactoryCode"] = rows["Factory"];                   //制造商
+                                newrow["ColorCode"] = rows["ColorCode"];                  //AKZO色号
+                                newrow["AkzoColorant"] = row[i][1];                      //AKZO色母
+                                newrow["Cumulant"] = row[i][2];                         //AKZO累积量
+                                newrow["AkzoColorantParent"] = row[i][3];              //AKZO色母量
 
-                        tempdt.Rows.Add(newrow);
-                        //计算并记录中间值 公式:AKZO色母量*浓度转换系数
-                        tempNum = decimal.Round(Convert.ToDecimal(row[i][3]) * ChangeNum, 3);
-                        //计算并记录合计数 公式:SUM(中间值)
-                        total += tempNum;
+                                newrow["YatuColorant"] = colorantrow[j][1];           //雅图色母
+                                newrow["Num"] = colorantrow[j][2];                   //浓度转换系数
+                                //计算色母量中间值=AKZO色母量*浓度转换系数
+                                newrow["tempNum"] = decimal.Round(Convert.ToDecimal(row[i][3]) * Convert.ToDecimal(colorantrow[j][2]), 3);
+                                //将新行插入至临时表内
+                                tempdt.Rows.Add(newrow);
+                                //累加中间值
+                                total += decimal.Round(Convert.ToDecimal(row[i][3]) * Convert.ToDecimal(colorantrow[j][2]), 3);
+                            }
+                        }
+                        //循环tempdt,当检查到其中的“累积量”出现>=1000时,就将该记录集截取,并放到以下的方法进行填充至newdt内,注:每执行完下面的方法后,tempdt及total需清空
+                        if (cumulant>=1000)
+                        {
+                            //循环临时表 作用:1)计算雅图最终色母量 2)将结果集赋给Newdt内 (注:最终色母量=中间值*100/合计数)
+                            foreach (DataRow temprows in tempdt.Rows)
+                            {
+                                var finialrow = newdt.NewRow();
+                                finialrow["制造商"] = temprows["FactoryCode"];
+                                finialrow["Akzo色号"] = temprows["ColorCode"];
+                                finialrow["Akzo色母"] = temprows["AkzoColorant"];
+                                finialrow["累积量"] = temprows["Cumulant"];
+                                finialrow["Akzo色母量"] = temprows["AkzoColorantParent"];
+                                finialrow["浓度转换系数"] = temprows["Num"];
+                                finialrow["雅图色母"] = temprows["YatuColorant"];
+                                finialrow["雅图新色母量"] = decimal.Round(Convert.ToDecimal(temprows["tempNum"]) * 100 / total, 3);
+                                newdt.Rows.Add(finialrow);
+                            }
+                            //执行完成后,将TempDt临时表的行及两个计算中间值色母量及总和变量清空,作下一次循环使用
+                            tempdt.Rows.Clear();
+                            total = 0;
+                        }
                     }
-                    //循环临时表 作用:1)计算雅图最终色母量 2)将结果集赋给Newdt内 (注:最终色母量=中间值*100/合计数)
-                    foreach (DataRow temprows in tempdt.Rows)
-                    {
-                        var finialrow = newdt.NewRow();
-                        finialrow["制造商"] = temprows["FactoryCode"];
-                        finialrow["Akzo色号"] = temprows["ColorCode"];
-                        finialrow["Akzo色母"] = temprows["AkzoColorant"];
-                        finialrow["累积量"] = temprows["Cumulant"];
-                        finialrow["Akzo色母量"] = temprows["AkzoColorantParent"];
-                        finialrow["浓度转换系数"] = temprows["Num"];
-                        finialrow["雅图色母"] = temprows["YatuColorant"];
-                        finialrow["雅图新色母量"] = decimal.Round(Convert.ToDecimal(temprows["tempNum"])*100 / total,3);
-                        newdt.Rows.Add(finialrow);
-                    }
-                    //执行完成后。将TempDt临时表的行及两个计算中间值色母量及总和变量清空,作下一次循环使用
-                    tempdt.Rows.Clear();
-                    tempNum = 0;
-                    total = 0;        
                 }
             }
             catch (Exception ex)
@@ -170,7 +183,6 @@ namespace Main.DB.Generate
                 newdt.Columns.Clear();
                 throw new Exception(ex.Message);
             }
-
             return newdt;
         }
 

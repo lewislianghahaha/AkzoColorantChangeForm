@@ -4,7 +4,6 @@ using System.Data;
 using System.Data.SqlClient;
 using System.IO;
 using Main.DB.SearchUpdate;
-using NPOI.HSSF.Util;
 using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 
@@ -89,10 +88,6 @@ namespace Main.DB.Import
                                 dataColumn.ColumnName = "Akzo色母量";
                                 dataColumn.DataType = Type.GetType("System.Decimal"); 
                                 break;
-                            //case 5:
-                            //    dataColumn.ColumnName = "层数";
-                            //    dataColumn.DataType = Type.GetType("System.String");
-                            //    break;
                         }
                         dt.Columns.Add(dataColumn);
                     }
@@ -578,7 +573,7 @@ namespace Main.DB.Import
                         }
                         else
                         {
-                            //若当前的行累积量>=1000时,表示该行为此行为记录集内同一层的最后一行,要将markid清空,若在此行以下还有新记录出现的话,就需要重新执行
+                            //若当前的行累积量>=1000时,表示该行为记录集内同一层的最后一行,要将markid清空,若在此行以下还有新记录出现的话,就需要重新执行(重)
                             if (Convert.ToDecimal(row[3])>=1000)
                             {
                                 row[4] = Convert.ToDecimal(row[3]) - cumulantTemp;
