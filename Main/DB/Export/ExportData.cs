@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Data.SqlClient;
 using System.IO;
 using NPOI.XSSF.UserModel;
 
@@ -7,13 +8,26 @@ namespace Main.DB.Export
 {
     public class ExportData
     {
+        Conn conn = new Conn();
+
+        #region 删除记录
+
+        private string _DelRecord = @"
+                                         DELETE FROM dbo.AkzoFormula WHERE MacAdd='{0}' AND ImportDt='{1}';
+                                         DELETE FROM dbo.AkzoFormulaEntry WHERE MacAdd='{0}' AND ImportDt='{1}';
+                                         DELETE FROM dbo.ColorCodeContrast WHERE MacAdd='{0}' AND ImportDt='{1}';
+                                    ";
+
+        #endregion
+
         /// <summary>
         /// 导出数据至EXCEL
         /// </summary>
         /// <param name="fileAddress">要导出的文件地址</param>
         /// <param name="dt">DataGridView数据源</param>
+        /// <param name="macadd">用户MAC地址</param>
         /// <returns></returns>
-        public string ExportDttoExcel(string fileAddress,DataTable dt)
+        public string ExportDttoExcel(string fileAddress,DataTable dt,string macadd)
         {
             //流程:1)创建EXCEL导出所需的列,2)从DT内循环读取数据
             var result ="0";
@@ -81,6 +95,8 @@ namespace Main.DB.Export
                 var file = new FileStream(fileAddress, FileMode.Create);
                 xssfWorkbook.Write(file);
                 file.Close();
+                //在导出成功后,根据指定条件进行删除对应的记录
+                DelDtRecord(macadd);
             }
             catch (Exception ex)
             {
@@ -88,6 +104,27 @@ namespace Main.DB.Export
             }
 
             return result;
+        }
+
+        /// <summary>
+        /// 根据指定条件删除“Akzo配方表”及"色母对照表"记录
+        /// </summary>
+        private void DelDtRecord(string macadd)
+        {
+            try
+            {
+                using (var sql = new SqlConnection(conn.GetConnectionString()))
+                {
+                    sql.Open();
+                    var sqlCommand = new SqlCommand(string.Format(_DelRecord,macadd,DateTime.Now.Date),sql);
+                    sqlCommand.ExecuteNonQuery();
+                    sql.Close();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message);
+            }
         }
     }
 }

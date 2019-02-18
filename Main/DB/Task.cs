@@ -113,7 +113,7 @@ namespace Main.DB
                     break;
                 //导出功能
                 case 6:
-                    ExportDtToExcel(_fileAddress,_importTable);
+                    ExportDtToExcel(_fileAddress,_importTable,_MacAdd);
                     break;
                 //查询AKZO配方(查询AKZO配方表使用)
                 case 7:
@@ -175,9 +175,9 @@ namespace Main.DB
         /// <summary>
         /// 将DATATABLE的数据导出至指定的EXCEL文件内
         /// </summary>
-        private void ExportDtToExcel(string fileAddress, DataTable dt)
+        private void ExportDtToExcel(string fileAddress, DataTable dt,string macadd)
         {
-            _importResult = exportData.ExportDttoExcel(fileAddress, dt);
+            _importResult = exportData.ExportDttoExcel(fileAddress, dt,macadd);
         }
 
         /// <summary>
