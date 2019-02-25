@@ -67,6 +67,7 @@
     <Compile Include="DB\Export\ExportData.cs" />
     <Compile Include="DB\Generate\GenerateRecord.cs" />
     <Compile Include="DB\Import\ImportData.cs" />
+    <Compile Include="DB\SearchUpdate\DeleteRecord.cs" />
     <Compile Include="DB\SearchUpdate\SearchData.cs" />
     <Compile Include="DB\Task.cs" />
     <Compile Include="Import\ImportAkzoFormula.cs">

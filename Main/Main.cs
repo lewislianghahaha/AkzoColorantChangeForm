@@ -32,6 +32,7 @@ namespace Main
             btnGenerate.Click += BtnGenerate_Click;
             //comFactory.Click += ComFactory_Click;
             tmSearchFormula.Click += TmSearchFormula_Click;
+            btndel.Click += Btndel_Click;
         }
 
         /// <summary>
@@ -254,6 +255,31 @@ namespace Main
                 var fsearch=new SearchFormulaForm();
                 fsearch.StartPosition=FormStartPosition.CenterScreen;
                 fsearch.ShowDialog();
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show(ex.Message, "错误", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        /// <summary>
+        /// 清空功能(以MAC地址以及当天日期清空记录)
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void Btndel_Click(object sender, EventArgs e)
+        {
+            try
+            {
+                //将所需的值赋到Task类内
+                task.TaskId = 8;
+                task.MacAdd = GetMacAddress();
+
+                //使用子线程工作(作用:通过调用子线程进行控制Load窗体的关闭情况)
+                new Thread(Start).Start();
+                load.StartPosition = FormStartPosition.CenterScreen;
+                load.ShowDialog();
+                MessageBox.Show("清空成功,可继续执行导入功能","成功",MessageBoxButtons.OK,MessageBoxIcon.Information);
             }
             catch (Exception ex)
             {

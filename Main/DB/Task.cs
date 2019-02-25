@@ -19,6 +19,7 @@ namespace Main.DB
         GenerateRecord generate=new GenerateRecord();
         SearchData search=new SearchData();
         ExportData exportData=new ExportData();
+        DeleteRecord del=new DeleteRecord();
 
         private int _taskid;
         private string _fileAddress;        //文件地址
@@ -119,6 +120,10 @@ namespace Main.DB
                 case 7:
                     SearchFormula(_factory,_MacAdd,_importdt);
                     break;
+                //针对MAC地址以及当天日期进行清空记录
+                case 8:
+                    DelRecord(_MacAdd);
+                    break;
             }
         }
 
@@ -189,6 +194,11 @@ namespace Main.DB
         private void SearchFormula(string factory,string macadd,DateTime dtTime)
         {
             _resultTable = search.SearchdtlList(factory,macadd,dtTime);
+        }
+
+        private void DelRecord(string macadd)
+        {
+             del.DelRecord(macadd);
         }
     }
 }

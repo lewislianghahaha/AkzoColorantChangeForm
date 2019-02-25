@@ -36,6 +36,7 @@
             this.tmExport = new System.Windows.Forms.ToolStripMenuItem();
             this.tm3 = new System.Windows.Forms.ToolStripMenuItem();
             this.tmSearchColorant = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
             this.tmSearchFormula = new System.Windows.Forms.ToolStripMenuItem();
             this.tmClose = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -48,7 +49,7 @@
             this.lblCount = new System.Windows.Forms.Label();
             this.panel3 = new System.Windows.Forms.Panel();
             this.gvdtl = new System.Windows.Forms.DataGridView();
-            this.toolStripSeparator2 = new System.Windows.Forms.ToolStripSeparator();
+            this.btndel = new System.Windows.Forms.Button();
             this.MainMenu.SuspendLayout();
             this.panel1.SuspendLayout();
             this.panel2.SuspendLayout();
@@ -116,13 +117,18 @@
             // tmSearchColorant
             // 
             this.tmSearchColorant.Name = "tmSearchColorant";
-            this.tmSearchColorant.Size = new System.Drawing.Size(152, 22);
+            this.tmSearchColorant.Size = new System.Drawing.Size(136, 22);
             this.tmSearchColorant.Text = "色母对照表";
+            // 
+            // toolStripSeparator2
+            // 
+            this.toolStripSeparator2.Name = "toolStripSeparator2";
+            this.toolStripSeparator2.Size = new System.Drawing.Size(133, 6);
             // 
             // tmSearchFormula
             // 
             this.tmSearchFormula.Name = "tmSearchFormula";
-            this.tmSearchFormula.Size = new System.Drawing.Size(152, 22);
+            this.tmSearchFormula.Size = new System.Drawing.Size(136, 22);
             this.tmSearchFormula.Text = "配方记录表";
             // 
             // tmClose
@@ -133,6 +139,7 @@
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.btndel);
             this.panel1.Controls.Add(this.btnGenerate);
             this.panel1.Controls.Add(this.comProductList);
             this.panel1.Controls.Add(this.label2);
@@ -231,10 +238,14 @@
             this.gvdtl.Size = new System.Drawing.Size(972, 468);
             this.gvdtl.TabIndex = 0;
             // 
-            // toolStripSeparator2
+            // btndel
             // 
-            this.toolStripSeparator2.Name = "toolStripSeparator2";
-            this.toolStripSeparator2.Size = new System.Drawing.Size(149, 6);
+            this.btndel.Location = new System.Drawing.Point(372, 10);
+            this.btndel.Name = "btndel";
+            this.btndel.Size = new System.Drawing.Size(75, 23);
+            this.btndel.TabIndex = 5;
+            this.btndel.Text = "清空记录";
+            this.btndel.UseVisualStyleBackColor = true;
             // 
             // Main
             // 
@@ -287,6 +298,7 @@
         private System.Windows.Forms.DataGridView gvdtl;
         private System.Windows.Forms.ToolStripMenuItem tmSearchFormula;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
+        private System.Windows.Forms.Button btndel;
     }
 }
 
