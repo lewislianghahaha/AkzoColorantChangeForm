@@ -62,7 +62,8 @@ namespace Main.DB.Import
                 //"Akzo配方表"使用
                 if (tableName == "AkzoFormula")
                 {
-                    for (int i = hearRow.FirstCellNum; i < hearRow.Cells.Count; i++)
+                    //for (int i = hearRow.FirstCellNum; i < hearRow.Cells.Count; i++)
+                    for (var i = 0; i < 5; i++)
                     {
                         var dataColumn = new DataColumn();
 
@@ -95,7 +96,7 @@ namespace Main.DB.Import
                 //"色母对照表"使用
                 else
                 {
-                    for (int i = hearRow.FirstCellNum; i < hearRow.Cells.Count; i++)
+                    for (var i = hearRow.FirstCellNum; i < hearRow.Cells.Count; i++)
                     {
                         var dataColumn = new DataColumn();
 
@@ -125,43 +126,37 @@ namespace Main.DB.Import
                 //创建完标题后,开始从第二行起读取对应列的值
                 for (var r = 1; r <= sheet.LastRowNum; r++)
                 {
-                  //  var result = false;
+                    var result = false;
                     var dr = dt.NewRow();
                     //获取当前行(注:只能获取行中有值的项,为空的项不能获取)
                     var row = sheet.GetRow(r);
                     //读取每列
                     for (var j = 0; j < row.Cells.Count; j++)
                     {
-                        //当读至最后一列时,就赋0给它
-                        if (j == row.Cells.Count-1)
+                        //循环获取行中的单元格
+                        var cell = row.GetCell(j);
+                        var cellValue = GetCellValue(cell);
+                        if (cellValue == string.Empty)
                         {
-                            dr[j] = 0;
+                            continue;
                         }
                         else
                         {
-                            //循环获取行中的单元格
-                            var cell = row.GetCell(j);
-                            dr[j] = GetCellValue(cell);
+                            dr[j] = cellValue;
                         }
-                        #region
+
                         //全为空就不取
-                        //if (dr[j].ToString() != "")
-                        //{
-                        //    result = true;
-                        //}
-                        #endregion
+                        if (dr[j].ToString() != "")
+                        {
+                            result = true;
+                        }
                     }
-                    if(dr[0].ToString() !="0")
+
+                    if (result == true)
                     {
+                        //把每行增加到DataTable
                         dt.Rows.Add(dr);
                     }
-                    #region
-                    //if (result == true)
-                    //{
-                    //    //把每行增加到DataTable
-                    //    dt.Rows.Add(dr);
-                    //}
-                    #endregion
                 }
             }
             return dt;
