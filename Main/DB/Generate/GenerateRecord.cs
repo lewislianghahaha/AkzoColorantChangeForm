@@ -178,10 +178,6 @@ namespace Main.DB.Generate
                             tempdt.Rows.Clear();
                             total = 0;
                         }
-                        else
-                        {
-                            
-                        }
                     }
                 }
             }
