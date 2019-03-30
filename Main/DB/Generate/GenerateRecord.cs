@@ -17,7 +17,7 @@ namespace Main.DB.Generate
         #region 根据指定条件查询出“AkzoFormula”表头信息(当制造商选了“全部”时执行) 注:使用MAC地址及当天日期进行查询
 
         private string _searchAkzoAll = @"
-                                            SELECT * FROM dbo.AkzoFormula a where /*a.MacAdd='{0}' AND*/ a.ImportDt='{1}'
+                                            SELECT * FROM dbo.AkzoFormula a where a.MacAdd='{0}' AND a.ImportDt='{1}'
                                           ";
 
         #endregion
@@ -35,7 +35,7 @@ namespace Main.DB.Generate
         #region 根据指定条件查询出"AkzoFormulaEntry"表体信息(当制造商选了“全部”时执行)  注:使用MAC地址及当天日期进行查询
 
         private string _searchAkzoEntryAll = @"
-                                                   SELECT * FROM AkzoFormulaEntry a where /*a.MacAdd='{0}' and*/ a.ImportDt='{1}'
+                                                   SELECT * FROM AkzoFormulaEntry a where a.MacAdd='{0}' and a.ImportDt='{1}'
                                               ";
 
         #endregion
@@ -43,7 +43,7 @@ namespace Main.DB.Generate
         #region 根据条件查询出"ColorCodeConstrast"表体信息  注:使用MAC地址及当天日期进行查询
 
         private string _searchColordtl = @"
-                                                  SELECT * FROM dbo.ColorCodeContrast a WHERE a.TypeId='{0}' /*and  a.MacAdd='{1}'*/ and a.ImportDt='{2}'
+                                                  SELECT * FROM dbo.ColorCodeContrast a WHERE a.TypeId='{0}' and  a.MacAdd='{1}' and a.ImportDt='{2}'
                                           ";
 
         #endregion
@@ -177,6 +177,10 @@ namespace Main.DB.Generate
                             //执行完成后,将TempDt临时表的行及两个计算中间值色母量及总和变量清空,作下一次循环使用
                             tempdt.Rows.Clear();
                             total = 0;
+                        }
+                        else
+                        {
+                            
                         }
                     }
                 }
