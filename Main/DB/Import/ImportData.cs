@@ -130,6 +130,8 @@ namespace Main.DB.Import
                     var dr = dt.NewRow();
                     //获取当前行(注:只能获取行中有值的项,为空的项不能获取)
                     var row = sheet.GetRow(r);
+                    if(row==null) continue;
+
                     //读取每列
                     for (var j = 0; j < row.Cells.Count; j++)
                     {
